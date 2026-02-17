@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Start to shoot B(1)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shoot to midfeild B(2)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Intaking to Fairy B(3)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fairy to intake2 B(4)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Intake2 to Shoot B(5)"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

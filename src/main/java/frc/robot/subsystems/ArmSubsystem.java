@@ -13,6 +13,7 @@ import static edu.wpi.first.units.Units.Volts;
 import static yams.mechanisms.SmartMechanism.gearbox;
 import static yams.mechanisms.SmartMechanism.gearing;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -22,6 +23,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.ARM_CONSTANTS;
 import yams.mechanisms.config.ArmConfig;
 import yams.mechanisms.config.MechanismPositionConfig;
 import yams.mechanisms.positional.Arm;
@@ -34,15 +36,14 @@ import yams.motorcontrollers.local.SparkWrapper;
 
 public class ArmSubsystem extends SubsystemBase
 {
+  private final SparkMax ArmMotor  = new SparkMax(ARM_CONSTANTS.ARM_ID, MotorType.kBrushless);
+  // private final AbsoluteEncoder absEncoder = ArmMotor.getAbsoluteEncoder();
+  // private static final double SAFE_MIN_ANGLE = 20.0;
+  // private static final double SAFE_MAX_ANGLE = 100.0;
   
-  // public static final Angle DEFENSE_ANGLE = Degrees.of(-15);
-
-  // private boolean defenseMode = false;
-
-  private final SparkMax ArmMotor  = new SparkMax(10, MotorType.kBrushless);
 
   private final SmartMotorControllerConfig motorConfig = new SmartMotorControllerConfig(this)
-      .withClosedLoopController(4, 0, 0, DegreesPerSecond.of(180), DegreesPerSecondPerSecond.of(90))
+      .withClosedLoopController(0.0001, 0, 0, DegreesPerSecond.of(180), DegreesPerSecondPerSecond.of(90))
       .withSoftLimit(Degrees.of(-30), Degrees.of(100))
       .withGearing(gearing(gearbox(5, 5)))
       .withExternalEncoder(ArmMotor.getAbsoluteEncoder())
@@ -82,7 +83,8 @@ public class ArmSubsystem extends SubsystemBase
   public void periodic()
   {
     arm.updateTelemetry();
-    //SmartDashboard.putBoolean("Arm Defense Mode", defenseMode);
+    
+    // SmartDashboard.putBoolean("Arm Safe", isArmSafe());
   }
 
   public void simulationPeriodic()
@@ -105,24 +107,12 @@ public class ArmSubsystem extends SubsystemBase
     return arm.setAngle(angle);
   }
 
+  // public boolean isArmSafe() {
+  //     double angleDeg = absEncoder.getPosition() * 360.0;
 
-
-  // public Command holdDefense() {
-  //     return setAngle(DEFENSE_ANGLE);
+  //     return angleDeg >= SAFE_MIN_ANGLE && angleDeg <= SAFE_MAX_ANGLE;
   // }
 
-  // public void toggleDefaultPosition() {
-  //   defenseMode = !defenseMode;
-
-  //   if (defenseMode) {
-  //     setDefaultCommand(holdDefense());
-  //   } else {
-  //     setDefaultCommand(null);
-  // }
-  // }
-  // public boolean isDefenseMode() {
-  //   return defenseMode;
-  // }
 
 
 

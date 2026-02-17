@@ -1,0 +1,61 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Start to Pickup A(1)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pickup to Shoot A(2)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shoot to pickup 2 A(3)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pickup 2 to shoot A(4)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shoot 2 to midfeild A(5)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Midfeild intaking fairy A(6)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Fairy to intaking2 A(7)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Intaking2 to last shoot A(8)"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

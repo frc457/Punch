@@ -25,15 +25,13 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.CommandTrain;
 import frc.robot.subsystems.ArmSubsystem;
-import frc.robot.subsystems.GateSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TransportSubsytem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 
-import static edu.wpi.first.units.Units.RPM;
-
+import static edu.wpi.first.units.Units.Degrees;
 import java.io.File;
 import swervelib.SwerveInputStream;
 
@@ -50,7 +48,7 @@ public class RobotContainer
   private final CommandXboxController m_operatorController = new CommandXboxController(1);
 
   private final ArmSubsystem m_arm = new ArmSubsystem();
-  private final GateSubsystem m_gate = new GateSubsystem();
+
   private final IndexerSubsystem m_indexer = new IndexerSubsystem();
   private final IntakeSubsystem m_intake = new IntakeSubsystem();
   private final ShooterSubsystem m_shooter = new ShooterSubsystem();
@@ -58,7 +56,7 @@ public class RobotContainer
 
   // Systems (command factories)
   private final CommandTrain m_fuelSystem = new CommandTrain(
-          m_arm, m_gate, m_indexer, m_intake, m_shooter, m_transport
+          m_arm, m_indexer, m_intake, m_shooter, m_transport
   );
 
 
@@ -67,9 +65,9 @@ public class RobotContainer
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/maxSwerve"));
 
-  /**
-   * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
-   */
+  // /**
+  //  * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
+  //  */
   SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
                                                                 () -> -driverController.getLeftY() * 1,
                                                                 () -> -driverController.getLeftX() * 1)
@@ -110,11 +108,12 @@ public class RobotContainer
   public RobotContainer()
   {
 
-    m_gate.setDefaultCommand(m_gate.setVelocity(RPM.of(0)));
-    m_indexer.setDefaultCommand(m_indexer.setVelocity(RPM.of(0)));
-    m_intake.setDefaultCommand(m_intake.setVelocity(RPM.of(0)));
-    m_shooter.setDefaultCommand(m_shooter.setVelocity(RPM.of(0)));
-    m_transport.setDefaultCommand(m_transport.setVelocity(RPM.of(0)));
+
+    m_indexer.setDefaultCommand(m_indexer.set(0));
+    m_intake.setDefaultCommand(m_intake.set(0));
+    m_shooter.setDefaultCommand(m_shooter.set(0));
+    m_transport.setDefaultCommand(m_transport.set(0));
+    m_arm.setDefaultCommand(m_arm.setAngle(Degrees.of(-40)));
   
 
 
@@ -141,18 +140,23 @@ public class RobotContainer
   private void configureBindings()
   {
     
-    m_operatorController.button(1).whileTrue(m_fuelSystem.Intaking());
-    m_operatorController.button(2).whileTrue(m_fuelSystem.mixer());
-    m_operatorController.button(3).whileTrue(m_fuelSystem.shoot());
-    m_operatorController.button(4).whileTrue(m_fuelSystem.throwup());
-    //m_operatorController.button(5).onTrue(Commands.runOnce(() -> m_arm.toggleDefaultPosition()));
+    m_operatorController.a().whileTrue(m_fuelSystem.Intaking());
+    m_operatorController.b().onTrue(m_fuelSystem.mixer());
+    m_operatorController.x().whileTrue(m_fuelSystem.shoot());
+    m_operatorController.y().whileTrue(m_fuelSystem.throwup());
+    m_operatorController.rightTrigger().whileTrue(m_shooter.set(1));
+    m_operatorController.a().onTrue(m_arm.setAngle(Degrees.of(60)));
+    m_operatorController.b().onTrue(m_arm.setAngle(Degrees.of(120)));
+    m_operatorController.x().onTrue(m_arm.setAngle(Degrees.of(200)));
+    m_operatorController.y().onTrue(m_arm.setAngle(Degrees.of(-1)));
+
 
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
     Command driveFieldOrientedDirectAngleKeyboard      = drivebase.driveFieldOriented(driveDirectAngleKeyboard);
-    /**
-     * Here we declare all of our operator commands, these commands could have been
-     * written more compact but are left verbose so the intent is clear.
-     */
+    // /**
+    //  * Here we declare all of our operator commands, these commands could have been
+    //  * written more compact but are left verbose so the intent is clear.
+    //  */
 
     if (RobotBase.isSimulation())
     {
@@ -207,6 +211,6 @@ public class RobotContainer
 
   public void setMotorBrake(boolean brake)
   {
-    drivebase.setMotorBrake(brake);
+   drivebase.setMotorBrake(brake);
   }
 }
