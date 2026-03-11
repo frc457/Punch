@@ -2,9 +2,11 @@ package frc.robot.subsystems;
 
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -16,6 +18,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ARM_CONSTANTS;
@@ -47,7 +51,7 @@ public class ArmSubsystem extends SubsystemBase
 
       .withClosedLoopController(new ExponentialProfilePIDController(ARM_CONSTANTS.kP, ARM_CONSTANTS.kI, ARM_CONSTANTS.kD, ExponentialProfilePIDController
       .createArmConstraints(Volts.of(10), motors, weight, length, gearing)))
-      .withSoftLimit(ARM_CONSTANTS.LOWER_SOFT_LIMIT, ARM_CONSTANTS.UPPER_SOFT_LIMIT)
+      .withSoftLimit(Rotations.of(0.032), Rotations.of(0.414))
       .withGearing(gearing)
       .withExternalEncoder(ArmMotor.getAbsoluteEncoder())
       .withIdleMode(MotorMode.BRAKE)
@@ -69,11 +73,11 @@ public class ArmSubsystem extends SubsystemBase
 
   private       ArmConfig m_config = new ArmConfig(motor)
       .withLength(length)
-      .withHardLimit(ARM_CONSTANTS.LOWER_HARD_LIMIT, ARM_CONSTANTS.UPPER_HARD_LIMIT)
+      .withHardLimit(Rotations.of(0.032), Rotations.of(0.414))
       .withTelemetry("ArmSubsystem", TelemetryVerbosity.HIGH)
       .withMass(Pounds.of(3))
       //.withStartingPosition(Degrees.of(0))
-      .withHorizontalZero(ARM_CONSTANTS.HORIZONTAL_ZERO)
+      .withHorizontalZero(Degrees.of(0.348))
       .withMechanismPositionConfig(robotToMechanism);
   private final Arm       arm      = new Arm(m_config);
 
@@ -84,7 +88,15 @@ public class ArmSubsystem extends SubsystemBase
   public void periodic()
   {
     arm.updateTelemetry();
-    
+        SmartDashboard.putNumber(
+        "Arm Angle (Degrees)",
+        arm.getAngle().in(Degrees)
+    );
+        SmartDashboard.putNumber(
+        "Arm Angle (Rotations)",
+        arm.getAngle().in(Rotations)
+    );
+
   
   }
 
