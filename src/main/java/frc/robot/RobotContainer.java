@@ -174,6 +174,13 @@ public class RobotContainer
         }
       ), new AutoShoot((() -> RPM.of(1500)), m_shooter, m_indexer, m_Hopper, 6))
       .withTimeout(5));
+
+      autChooser.addOption("Aim at Center of Hub and Shoot", new ParallelCommandGroup(drivebase.aimAtNearestTag(Cameras.LEFT_CAM, 
+        new int[]{Constants.blueZoneHubCenterTagID,
+          Constants.redZoneHubCenterTagID
+        }
+      ), new AutoShoot((() -> RPM.of(1500)), m_shooter, m_indexer, m_Hopper, 6))
+      .withTimeout(5));
     // autChooser.addOption("Scoring Position Path", drivebase.getAutonomousCommand("ScoringPosition"));
     SmartDashboard.putData("Auto Chooser",autChooser);
   }
