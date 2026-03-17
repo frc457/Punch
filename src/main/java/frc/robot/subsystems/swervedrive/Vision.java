@@ -543,8 +543,11 @@ public class Vision
         targets.sort(Comparator.comparing((target) -> target.getArea()));
         Collections.reverse(targets);
         
-        if (targets.size() >= 2) {
+        if (targets.size() >= 3) {
           return new ArrayList<PhotonTrackedTarget>(targets.subList(0, 2));
+        }
+        else {
+          return new ArrayList<PhotonTrackedTarget>(targets.subList(0, targets.size()));
         }
       }
     return null;
