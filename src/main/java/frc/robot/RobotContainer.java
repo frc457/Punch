@@ -64,7 +64,7 @@ public class RobotContainer
    private final ArmSubsystem m_arm = new ArmSubsystem();
    //private final ARM arm = new ARM();
   private final IndexerSubsystem m_indexer = new IndexerSubsystem();
-   private final IntakeSubsystem m_intake = new IntakeSubsystem();
+  private final IntakeSubsystem m_intake = new IntakeSubsystem();
   private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   private final HopperSubsytem m_Hopper = new HopperSubsytem();
 
@@ -123,6 +123,18 @@ public class RobotContainer
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/maxSwerve"));
 
+
+  private final Command aimAtHubCommand = drivebase.aimAtNearestTag(Cameras.LEFT_CAM, 
+        new int[]{Constants.blueZoneHubLeftTagID,
+          Constants.blueZoneHubRightTagID,
+          Constants.redZoneHubLeftTagID,
+          Constants.redZoneHubRightTagID,
+          Constants.blueZoneHubCenterTagID,
+          Constants.redZoneHubCenterTagID,
+          Constants.blueZoneHubCenterLeftTagID,
+          Constants.redZoneHubCenterLeftTagID
+        }
+      );
   private final Command aimAtTargetAutoCommand = drivebase.aimAtTarget(Cameras.LEFT_CAM, AutonConstants.aimAtTargetID, false);
   private final Command driveToTargetCommand = drivebase.driveToPose(
     drivebase.getVision().getAprilTagPose(AutonConstants.aimAtTargetID, new Transform2d(2, -0.50, new Rotation2d())));
@@ -204,20 +216,10 @@ public class RobotContainer
     autChooser.addOption("Aim at Target Command", aimAtTargetAutoCommand);
     autChooser.addOption("Drive to AprilTag", driveToTargetCommand);
     // autChooser.addOption("Test_One PathPlanner Command", drivebase.getAutonomousCommand("Test_One"));
-    autChooser.addOption("Aim at Hub and Shoot", new ParallelCommandGroup(drivebase.aimAtNearestTag(Cameras.LEFT_CAM, 
-        new int[]{Constants.blueZoneHubLeftTagID,
-          Constants.blueZoneHubRightTagID,
-          Constants.redZoneHubLeftTagID,
-          Constants.redZoneHubRightTagID,
-          Constants.blueZoneHubCenterTagID,
-          Constants.redZoneHubCenterTagID,
-          Constants.blueZoneHubCenterLeftTagID,
-          Constants.redZoneHubCenterLeftTagID
-        }
-      ), new AutoShoot(()->RPM.of(2500), 
+    autChooser.addOption("Aim at Hub and Shoot", new ParallelCommandGroup(aimAtHubCommand, new AutoShoot(()->RPM.of(2500), 
                                       m_shooter, m_indexer, m_Hopper, 3, armOscillateCommand))
       .withTimeout(5));
-      
+
     // autChooser.addOption("Scoring Position Path", drivebase.getAutonomousCommand("ScoringPosition"));
     SmartDashboard.putData("Auto Chooser",autChooser);
   }
@@ -297,7 +299,23 @@ public class RobotContainer
     // // m_operatorController.button(3).onFalse(m_arm.setAngle(Degrees.of(200)));
     //m_operatorController.button(1).whileTrue(new ShootCommand(()-> RPM.of(5000), m_shooter, m_indexer, m_Hopper));
 
+    // Aim at the nearest AprilTag on the hub
+    driverController.R3().whileTrue(aimAtHubCommand);
 
+    // Aim and shoot at the hub
+    // driverController.R3().whileTrue(
+    //   new ParallelCommandGroup(drivebase.aimAtNearestTag(Cameras.LEFT_CAM, 
+    //   new int[]{Constants.blueZoneHubLeftTagID,
+    //     Constants.blueZoneHubRightTagID,
+    //     Constants.redZoneHubLeftTagID,
+    //     Constants.redZoneHubRightTagID,
+    //     Constants.blueZoneHubCenterTagID,
+    //     Constants.redZoneHubCenterTagID,
+    //     Constants.blueZoneHubCenterLeftTagID,
+    //     Constants.redZoneHubCenterLeftTagID
+    //   }
+    // ), new AutoShoot(()->RPM.of(2500), 
+    //                                 m_shooter, m_indexer, m_Hopper, 3, armOscillateCommand)));
 
 
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
@@ -343,35 +361,6 @@ public class RobotContainer
       driverController.options().whileTrue(Commands.none());
       //driverController.L1().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverController.R1().onTrue(Commands.none());
-      
-      // Aim at the nearest AprilTag on the hub
-      driverController.R3().whileTrue(drivebase.aimAtNearestTag(Cameras.LEFT_CAM, 
-        new int[]{Constants.blueZoneHubLeftTagID,
-          Constants.blueZoneHubRightTagID,
-          Constants.redZoneHubLeftTagID,
-          Constants.redZoneHubRightTagID,
-          Constants.blueZoneHubCenterTagID,
-          Constants.redZoneHubCenterTagID,
-          Constants.blueZoneHubCenterLeftTagID,
-          Constants.redZoneHubCenterLeftTagID
-        }
-      ));
-
-      // Aim and shoot at the hub
-      // driverController.R3().whileTrue(
-      //   new ParallelCommandGroup(drivebase.aimAtNearestTag(Cameras.LEFT_CAM, 
-      //   new int[]{Constants.blueZoneHubLeftTagID,
-      //     Constants.blueZoneHubRightTagID,
-      //     Constants.redZoneHubLeftTagID,
-      //     Constants.redZoneHubRightTagID,
-      //     Constants.blueZoneHubCenterTagID,
-      //     Constants.redZoneHubCenterTagID,
-      //     Constants.blueZoneHubCenterLeftTagID,
-      //     Constants.redZoneHubCenterLeftTagID
-      //   }
-      // ), new AutoShoot(()->RPM.of(2500), 
-      //                                 m_shooter, m_indexer, m_Hopper, 3, armOscillateCommand)));
-
     }
 
   }
