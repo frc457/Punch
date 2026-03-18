@@ -547,7 +547,7 @@ public class Vision
           return new ArrayList<PhotonTrackedTarget>(targets.subList(0, 3));
         }
         else {
-          return new ArrayList<PhotonTrackedTarget>(targets.subList(0, targets.size()));
+          return new ArrayList<PhotonTrackedTarget>(targets);
         }
       }
     return null;
