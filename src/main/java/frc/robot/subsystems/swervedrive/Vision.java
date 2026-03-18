@@ -537,14 +537,14 @@ public class Vision
       return null;
     }
 
-    public ArrayList<PhotonTrackedTarget> getBestTargets(PhotonPipelineResult result) {
+    public ArrayList<PhotonTrackedTarget> getClosestTargets(PhotonPipelineResult result) {
       if (result.hasTargets()) {
         List<PhotonTrackedTarget> targets = result.getTargets();
         targets.sort(Comparator.comparing((target) -> target.getArea()));
         Collections.reverse(targets);
         
         if (targets.size() >= 3) {
-          return new ArrayList<PhotonTrackedTarget>(targets.subList(0, 2));
+          return new ArrayList<PhotonTrackedTarget>(targets.subList(0, 3));
         }
         else {
           return new ArrayList<PhotonTrackedTarget>(targets.subList(0, targets.size()));

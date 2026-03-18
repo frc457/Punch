@@ -311,14 +311,14 @@ public class SwerveSubsystem extends SubsystemBase
 
   public Command aimAtNearestTag(Cameras camera, int[] aprilTagIDs)
   {
-    return runOnce(() -> {
+    return run(() -> {
       Optional<PhotonPipelineResult> resultO = camera.getBestResult();
       
       if (resultO.isPresent())
       {
         var result = resultO.get();
 
-        ArrayList<PhotonTrackedTarget> bestTargets = camera.getBestTargets(result); // Returns the top two best targets or null if not found
+        ArrayList<PhotonTrackedTarget> bestTargets = camera.getClosestTargets(result); // Returns the top three closest targets or null if not found
 
         if (bestTargets == null) {
           return;
@@ -336,14 +336,15 @@ public class SwerveSubsystem extends SubsystemBase
         }
       }
 
-    }).andThen(run(() -> {
+    }).until(() -> nearestDesiredTargetID != -1)
+    .andThen(run(() -> {
       Optional<PhotonPipelineResult> resultO = camera.getBestResult();
       
       if (resultO.isPresent())
       {
         var result = resultO.get();
 
-        ArrayList<PhotonTrackedTarget> bestTargets = camera.getBestTargets(result); // Returns the top two best targets or null if not found
+        ArrayList<PhotonTrackedTarget> bestTargets = camera.getClosestTargets(result); // Returns the top two best targets or null if not found
 
         if (bestTargets == null) {
           return;
@@ -391,7 +392,9 @@ public class SwerveSubsystem extends SubsystemBase
         }
         
       }   
-     )).finallyDo(() -> {SmartDashboard.putNumber("Aiming at AprilTag", -1);});
+     )).finallyDo(() -> {
+      nearestDesiredTargetID = -1;
+      SmartDashboard.putNumber("Aiming at AprilTag", nearestDesiredTargetID);});
   }
 
 
