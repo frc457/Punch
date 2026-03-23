@@ -131,7 +131,7 @@ public class ShootOnTheMoveAim extends Command {
     double shooterRPM = shooter.rpmForDistanceMeters(distanceMeters);
     shooter.setMechanismVelocitySetpoint(RPM.of(shooterRPM));
 
-    double noteSpeedMps = Constants.estimateNoteSpeedMps(shooterRPM);
+    double ballSpeedMps = Constants.estimateBallSpeedMps(shooterRPM);
 
     Translation2d towardHubUnit =
         new Translation2d(toHub.getX() / distanceMeters, toHub.getY() / distanceMeters);
@@ -139,10 +139,10 @@ public class ShootOnTheMoveAim extends Command {
     // Required launch vector relative to robot:
     // launchVector + estimatedRobotVelocity = desiredBallVelocityTowardHub
     Translation2d launchVector =
-        towardHubUnit.times(noteSpeedMps).minus(estimatedVel);
+        towardHubUnit.times(ballSpeedMps).minus(estimatedVel);
 
     if (launchVector.getNorm() < 1e-6) {
-      launchVector = towardHubUnit.times(noteSpeedMps);
+      launchVector = towardHubUnit.times(ballSpeedMps);
     }
 
     Rotation2d correctedHeading =
@@ -189,7 +189,7 @@ public class ShootOnTheMoveAim extends Command {
     SmartDashboard.putNumber("SOTM/PredictedReleaseY", predictedReleasePose.getY());
     SmartDashboard.putNumber("SOTM/DistanceMeters", distanceMeters);
     SmartDashboard.putNumber("SOTM/ShooterTargetRPM", shooterRPM);
-    SmartDashboard.putNumber("SOTM/NoteSpeedMps", noteSpeedMps);
+    SmartDashboard.putNumber("SOTM/NoteSpeedMps", ballSpeedMps);
     SmartDashboard.putNumber("SOTM/CommandedVX", commandedVel.getX());
     SmartDashboard.putNumber("SOTM/CommandedVY", commandedVel.getY());
     SmartDashboard.putNumber("SOTM/MeasuredVX", measuredVel.getX());
