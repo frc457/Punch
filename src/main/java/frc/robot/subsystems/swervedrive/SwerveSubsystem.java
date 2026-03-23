@@ -19,6 +19,7 @@ import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -31,6 +32,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -40,6 +42,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.swervedrive.Vision.Cameras;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -47,9 +50,12 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.json.simple.parser.ParseException;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
+
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
+import swervelib.SwerveModule;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
@@ -71,11 +77,14 @@ public class SwerveSubsystem extends SubsystemBase
   /**
    * Enable vision odometry updates while driving.
    */
-  private final boolean             visionDriveTest     = false;
+  private final boolean             visionDriveTest     = true;
   /**
    * PhotonVision class to keep an accurate odometry.
    */
   private Vision vision;
+
+  private PhotonTrackedTarget nearestDesiredTarget = null;
+  private int nearestDesiredTargetID = -1;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -138,6 +147,10 @@ public class SwerveSubsystem extends SubsystemBase
     vision = new Vision(swerveDrive::getPose, swerveDrive.field);
   }
 
+  public Vision getVision() {
+    return vision;
+  }
+
   @Override
   public void periodic()
   {
@@ -146,6 +159,18 @@ public class SwerveSubsystem extends SubsystemBase
     {
       swerveDrive.updateOdometry();
       vision.updatePoseEstimation(swerveDrive);
+
+      // Only for updating the "Distance from Hub" SmartDashboard value
+      Cameras.LEFT_CAM.getDistanceToHub(vision, new int[]{Constants.blueZoneHubLeftTagID,
+          Constants.blueZoneHubRightTagID,
+          Constants.redZoneHubLeftTagID,
+          Constants.redZoneHubRightTagID,
+          Constants.blueZoneHubCenterTagID,
+          Constants.redZoneHubCenterTagID,
+          Constants.blueZoneHubCenterLeftTagID,
+          Constants.redZoneHubCenterLeftTagID
+        }, true);
+
     }
   }
 
@@ -224,6 +249,173 @@ public class SwerveSubsystem extends SubsystemBase
     // IF USING CUSTOM PATHFINDER ADD BEFORE THIS LINE
     CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
   }
+
+  /**
+   * Aim the robot at the specified target returned by PhotonVision.
+   *
+   * @return A {@link Command} which will run the alignment.
+   */
+  public Command aimAtTarget(Cameras camera, int targetID, boolean endCommandWhenAimed)
+  {
+    return run(() -> {
+      Optional<PhotonPipelineResult> resultO = camera.getBestResult();
+      
+      if (resultO.isPresent())
+      {
+        var result = resultO.get();
+
+        PhotonTrackedTarget desiredTarget = camera.getTarget(result, targetID);
+        SmartDashboard.putBoolean("AprilTag " + targetID + " in Field of View:", desiredTarget != null);
+
+        if (result.hasTargets() && desiredTarget != null) {
+          PIDController pid = new PIDController(
+                  Constants.aprilTagAimingPID_kP,
+                  Constants.aprilTagAimingPID_kI, 
+                  Constants.aprilTagAimingPID_kD);
+          
+          pid.enableContinuousInput(-180, 180);
+
+          double pidCalculation = pid.calculate(swerveDrive.getYaw().getDegrees(), desiredTarget.getYaw());
+          
+          double turnAngle = pidCalculation;
+
+          SmartDashboard.putNumber("Aiming at AprilTag", desiredTarget.getFiducialId());
+
+          drive(getTargetSpeeds(0,
+                              0,
+                              Rotation2d.fromDegrees(turnAngle)));
+          
+          pid.close();
+        }
+        else {
+          drive(getTargetSpeeds(0,
+                                0,
+                                Rotation2d.fromDegrees(0)));
+          
+        }
+
+        
+      }   
+     }).until(() -> {
+      if (!endCommandWhenAimed) {
+        return false;
+      }
+
+      Optional<PhotonPipelineResult> resultO = camera.getBestResult();
+
+      if (resultO.isPresent())
+      {
+        var result = resultO.get();
+
+        PhotonTrackedTarget desiredTarget = camera.getTarget(result, targetID);
+
+        if (result.hasTargets() && desiredTarget != null) {
+          return Math.abs(swerveDrive.getPose().getRotation().getDegrees() + desiredTarget.getYaw()) < 0.5;
+        }
+      }
+      return false;
+      }).finallyDo(() -> {SmartDashboard.putNumber("Aiming at AprilTag", -1);});
+  }
+
+  /*
+  Aim at Nearest AprilTag Command:
+    This command accepts an array (list) of AprilTag ID integers and aims at the nearest one.
+    Note: This command should only be run in parallel with other commands as once it ends, the robot reorients itself to
+    its default position. In teleop, it should be binded to a trigger while the button's held down.
+  */
+
+  public Command aimAtNearestTag(Cameras camera, int[] aprilTagIDs)
+  {
+    return run(() -> {
+      Optional<PhotonPipelineResult> resultO = camera.getBestResult();
+      
+      if (resultO.isPresent())
+      {
+        var result = resultO.get();
+
+        ArrayList<PhotonTrackedTarget> closestTargets = camera.getClosestTargets(result); // Returns the top three closest targets or null if not found
+
+        if (closestTargets == null) {
+          return;
+        }
+
+        for (PhotonTrackedTarget target: closestTargets) {
+          if (target != null) {
+            for (int aprilTagID: aprilTagIDs) {
+              if (target.getFiducialId() == aprilTagID) {
+                nearestDesiredTargetID = target.getFiducialId();
+                return;
+              }
+            }
+          }
+        }
+      }
+
+    }).until(() -> nearestDesiredTargetID != -1)
+    .andThen(run(() -> {
+      Optional<PhotonPipelineResult> resultO = camera.getBestResult();
+      
+      if (resultO.isPresent())
+      {
+        var result = resultO.get();
+
+        ArrayList<PhotonTrackedTarget> closestTargets = camera.getClosestTargets(result); // Returns the top two best targets or null if not found
+
+        if (closestTargets == null) {
+          return;
+        }
+
+        for (PhotonTrackedTarget bestTarget: closestTargets) {
+          if (bestTarget != null) {
+            if (bestTarget.getFiducialId() == nearestDesiredTargetID) {
+              nearestDesiredTarget = bestTarget;
+              
+              PIDController pid = new PIDController(
+              Constants.aprilTagAimingPID_kP,
+              Constants.aprilTagAimingPID_kI, 
+              Constants.aprilTagAimingPID_kD);
+
+              pid.enableContinuousInput(-180, 180);
+
+              double pidCalculation = pid.calculate(swerveDrive.getYaw().getDegrees(), nearestDesiredTarget.getYaw());
+              
+              double turnAngle = pidCalculation;
+
+              SmartDashboard.putNumber("Aiming at AprilTag", nearestDesiredTarget.getFiducialId());
+
+              drive(getTargetSpeeds(0,
+                                  0,
+                                  Rotation2d.fromDegrees(turnAngle)));
+              
+              pid.close();
+
+              return;
+            }
+            
+          }
+          
+        }
+
+        
+        }
+                
+          
+        
+
+        if (nearestDesiredTarget == null) {
+          drive(getTargetSpeeds(0,
+                              0,
+                              Rotation2d.fromDegrees(0)));
+        }
+        
+      }   
+     )).finallyDo(() -> {
+      nearestDesiredTargetID = -1;
+      SmartDashboard.putNumber("Aiming at AprilTag", nearestDesiredTargetID);});
+  }
+
+
+
 
   /**
    * Aim the robot at the target returned by PhotonVision.

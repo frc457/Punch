@@ -11,6 +11,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -19,9 +20,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.AutonConstants;
 import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS.SHOOTER_SPEED;
@@ -29,6 +32,7 @@ import frc.robot.commands.AutoCommands;
 //import frc.robot.commands.AutoCommands;
 //import frc.robot.commands.AutoIntaking;
 import frc.robot.commands.AutoShoot;
+import frc.robot.commands.ShootIntoHub;
 import frc.robot.commands.CommandTrain;
 import frc.robot.commands.ShootCommand;
 //import frc.robot.subsystems.ArmSubsystem;
@@ -39,6 +43,8 @@ import frc.robot.subsystems.ArmSubsystem;
 //import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.HopperSubsytem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.subsystems.swervedrive.Vision.Cameras;
+
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Degrees;
@@ -52,19 +58,17 @@ import swervelib.SwerveInputStream;
  */
 public class RobotContainer
 {
-  
 
+  
   private final  CommandPS5Controller driverController = new CommandPS5Controller(0);
   private final CommandPS5Controller m_operatorController = new CommandPS5Controller(1);
 
    private final ArmSubsystem m_arm = new ArmSubsystem();
    //private final ARM arm = new ARM();
   private final IndexerSubsystem m_indexer = new IndexerSubsystem();
-   private final IntakeSubsystem m_intake = new IntakeSubsystem();
+  private final IntakeSubsystem m_intake = new IntakeSubsystem();
   private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   private final HopperSubsytem m_Hopper = new HopperSubsytem();
-
-  private final Command armOscillateCommand;
 
   // Systems (command factories)
   private final CommandTrain m_CommandTrain = new CommandTrain(
@@ -74,6 +78,9 @@ public class RobotContainer
           m_shooter, 
           m_Hopper
   );
+
+  // private final Command armOscillateCommand = m_CommandTrain.armOscillate();
+  private final Command armOscillateCommand = m_CommandTrain.armOscillate();
 
     private final AutoCommands a_Commands = new AutoCommands(
           m_arm,
@@ -121,6 +128,33 @@ public class RobotContainer
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/maxSwerve"));
 
+
+  private final Command aimAtHubCommand = drivebase.aimAtNearestTag(Cameras.LEFT_CAM, 
+        new int[]{Constants.blueZoneHubLeftTagID,
+          Constants.blueZoneHubRightTagID,
+          Constants.redZoneHubLeftTagID,
+          Constants.redZoneHubRightTagID,
+          Constants.blueZoneHubCenterTagID,
+          Constants.redZoneHubCenterTagID,
+          Constants.blueZoneHubCenterLeftTagID,
+          Constants.redZoneHubCenterLeftTagID
+        }
+      );
+  private final Command shootIntoHubCommand = new ShootIntoHub(Cameras.LEFT_CAM, new int[]{Constants.blueZoneHubLeftTagID,
+          Constants.blueZoneHubRightTagID,
+          Constants.redZoneHubLeftTagID,
+          Constants.redZoneHubRightTagID,
+          Constants.blueZoneHubCenterTagID,
+          Constants.redZoneHubCenterTagID,
+          Constants.blueZoneHubCenterLeftTagID,
+          Constants.redZoneHubCenterLeftTagID
+        }, m_shooter, m_indexer, m_Hopper, drivebase, armOscillateCommand);
+  
+  private final Command aimAtTargetAutoCommand = drivebase.aimAtTarget(Cameras.LEFT_CAM, AutonConstants.aimAtTargetID, false);
+  private final Command driveToTargetCommand = drivebase.driveToPose(
+    drivebase.getVision().getAprilTagPose(AutonConstants.aimAtTargetID, new Transform2d(2, -0.50, new Rotation2d())));
+
+
   // /**
   //  * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
   //  */
@@ -163,7 +197,6 @@ public class RobotContainer
 
   public RobotContainer()
   {
-  armOscillateCommand = m_CommandTrain.armOscillate();
   //mixer = m_CommandTrain.mixer();
 
   m_indexer.setDefaultCommand(m_indexer.set(0));
@@ -193,6 +226,14 @@ public class RobotContainer
     NamedCommands.registerCommand("ArmUp", m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
 
     autChooser = AutoBuilder.buildAutoChooser("MiddleAuto");
+    NamedCommands.registerCommand("Aim at Target Command", aimAtTargetAutoCommand);
+    autChooser.addOption("Aim at Target Command", aimAtTargetAutoCommand);
+    autChooser.addOption("Drive to AprilTag", driveToTargetCommand);
+    // autChooser.addOption("Test_One PathPlanner Command", drivebase.getAutonomousCommand("Test_One"));
+    // autChooser.addOption("Aim at Hub and Shoot", new ParallelCommandGroup(aimAtHubCommand, shootIntoHubCommand)
+    //   .withTimeout(5));
+
+    // autChooser.addOption("Scoring Position Path", drivebase.getAutonomousCommand("ScoringPosition"));
     SmartDashboard.putData("Auto Chooser",autChooser);
   }
 
@@ -294,7 +335,12 @@ public class RobotContainer
     // // m_operatorController.button(3).onFalse(m_arm.setAngle(Degrees.of(200)));
     //m_operatorController.button(1).whileTrue(new ShootCommand(()-> RPM.of(5000), m_shooter, m_indexer, m_Hopper));
 
+    // Aim at the nearest AprilTag on the hub
+    driverController.R3().whileTrue(aimAtHubCommand);
 
+    // Aim and shoot at the hub
+    // driverController.R3().whileTrue(
+    //   new ParallelCommandGroup(aimAtHubCommand, shootIntoHubCommand));
 
 
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
