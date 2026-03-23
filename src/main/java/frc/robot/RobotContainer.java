@@ -184,13 +184,17 @@ public class RobotContainer
     DriverStation.silenceJoystickConnectionWarning(true);
     //NamedCommands.registerCommand("TimedShoot", m_CommandTrain.timedShoot());
     //NamedCommands.registerCommand("TimedIntaking", m_CommandTrain.timedIntaking());
-    NamedCommands.registerCommand("Shoot", a_Commands.shoot());
-    NamedCommands.registerCommand("Shoot", a_Commands.shoot_Corrner());
+    //NamedCommands.registerCommand("Shoot", a_Commands.shoot());
+    NamedCommands.registerCommand("Shoot", new AutoShoot(() -> SHOOTER_SPEED.SIDE_TRENCH_VELOCITY,  
+    m_shooter, m_indexer, m_Hopper));
+    NamedCommands.registerCommand("CorrnerShoot", a_Commands.shoot_Corrner());
     NamedCommands.registerCommand("Intake",  a_Commands.Auto_Intaking());
     NamedCommands.registerCommand("IntakeStop",  a_Commands.Auto_Intaking_STOP());
     NamedCommands.registerCommand("AutoDone", Commands.runOnce(() -> SmartDashboard.putBoolean("Auto Finished", true)));
     NamedCommands.registerCommand("ArmDown", m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
-    NamedCommands.registerCommand("ArmUp", m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
+    NamedCommands.registerCommand("ArmUp", m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SHOOT_ANGLE));
+    //NamedCommands.registerCommand("ArmUp", m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
+    NamedCommands.registerCommand("shoot_strait",  a_Commands.shoot_strait());
 
     autChooser = AutoBuilder.buildAutoChooser("MiddleAuto");
     SmartDashboard.putData("Auto Chooser",autChooser);
@@ -216,8 +220,9 @@ public class RobotContainer
     m_operatorController.L1().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.FAR_VELOCITY,  
     m_shooter, m_indexer, m_Hopper));
     m_operatorController.triangle().whileTrue(m_CommandTrain.Intaking());
-    m_operatorController.povUp().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
-    m_operatorController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
+    
+    m_operatorController.button(11).whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
+    m_operatorController.button(12).whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
 
      m_operatorController.square().whileTrue(m_CommandTrain.throwup());
     m_operatorController.cross().onTrue(m_CommandTrain.mixer());

@@ -24,7 +24,8 @@ public class AutoCommands {
     private ShooterSubsystem Shooter;
     private HopperSubsytem Hopper;
 
-    public AutoCommands(ArmSubsystem Arm, IndexerSubsystem Indexer, 
+    public AutoCommands(ArmSubsystem Arm,
+     IndexerSubsystem Indexer, 
         IntakeSubsystem Intake, ShooterSubsystem Shooter, HopperSubsytem Hopper){
         this.Arm = Arm;
         this.Indexer = Indexer;
@@ -65,6 +66,15 @@ public class AutoCommands {
         return Shooter.setVelocity(SHOOTER_SPEED.CORRNER_VELOCITY).withTimeout(1.5)
         // .alongWith(Indexer.set(-1).withTimeout(1)) 
         .andThen(Shooter.setVelocity(SHOOTER_SPEED.CORRNER_VELOCITY)
+            .alongWith(Indexer.set(-1)) 
+            .alongWith(Hopper.set(-1))).withTimeout(6);
+        
+
+    }
+            public Command shoot_strait(){ 
+        return Shooter.setVelocity(RPM.of(2300)).withTimeout(1.5)
+        // .alongWith(Indexer.set(-1).withTimeout(1)) 
+        .andThen(Shooter.setVelocity(RPM.of(2300))
             .alongWith(Indexer.set(-1)) 
             .alongWith(Hopper.set(-1))).withTimeout(6);
         

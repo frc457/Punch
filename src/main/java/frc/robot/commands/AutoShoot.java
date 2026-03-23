@@ -5,32 +5,35 @@ import static edu.wpi.first.units.Units.RPM;
 import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.HopperSubsytem;
+import edu.wpi.first.wpilibj.Timer;
 
 public class AutoShoot extends Command
 {
 
     private ShooterSubsystem shooter;
     private IndexerSubsystem indexer;
+    //private Command armOscillateCommand;
+    //private Command mixer;
     private HopperSubsytem Hopper;
     private Supplier<AngularVelocity> setpoint;
     private Timer timer = new Timer();
-    private double duration;
-    //private Command armOscillateCommand;
+    private boolean feeding = false;
+    
 
-    public AutoShoot(Supplier<AngularVelocity> shootSpeed, ShooterSubsystem shooter, IndexerSubsystem indexer, HopperSubsytem Hopper, double durationSeconds)//Command armOscillate)
+    public AutoShoot(Supplier<AngularVelocity> shootSpeed, ShooterSubsystem shooter, IndexerSubsystem indexer, HopperSubsytem Hopper//, Command armOscillate
+    )
     {
         this.shooter = shooter;
         this.indexer = indexer;
         this.Hopper = Hopper;
         setpoint = shootSpeed;
-        this.duration =durationSeconds;
-        //this.armOscillateCommand = armOscillate;
+         //this.armOscillateCommand = armOscillate;
+        //this.mixer = mixer;
         addRequirements(shooter, indexer, Hopper);
     }
     
@@ -42,28 +45,39 @@ public class AutoShoot extends Command
   public void initialize()
   {
     shooter.setMechanismVelocitySetpoint(setpoint.get());
-        timer.reset();
-        timer.start();
+    //CommandScheduler.getInstance().schedule(mixer);
+      timer.reset();
+      timer.stop();
+      feeding = false;
+    
   }
 
   /**
    * The main body of a command.  Called repeatedly while the command is scheduled. (That is, it is called repeatedly
    * until {@link #isFinished()}) returns true.)
    */
-  @Override
-  public void execute()
-  {
+@Override
+public void execute()
+{
     shooter.setMechanismVelocitySetpoint(setpoint.get());
+
     if (shooter.getVelocity().in(RPM) >= setpoint.get().in(RPM) * 0.95)
     {
-        //CommandScheduler.getInstance().schedule(armOscillateCommand);
+        if (!feeding)
+        {
+            timer.start();   // start timing ONLY once we hit speed
+            feeding = true;
+        }
+
         indexer.setduty(-1);
         Hopper.setduty(-1);
-    }else{
+    }
+    else
+    {
         indexer.setduty(0);
         Hopper.setduty(0);
     }
-  }
+}
 
   /**
    * <p>
@@ -81,7 +95,7 @@ public class AutoShoot extends Command
   @Override
   public boolean isFinished()
   {
-    return timer.hasElapsed(duration);
+    return feeding && timer.get() >= 3;
   }
 
   /**
@@ -94,10 +108,8 @@ public class AutoShoot extends Command
   @Override
   public void end(boolean interrupted)
   {
-    //shooter.setMechanismVelocitySetpoint(RPM.of(0));
+ 
     //CommandScheduler.getInstance().cancel(armOscillateCommand);
-    shooter.set(0);
-    indexer.setduty(0);
-    Hopper.setduty(0);
+    shooter.setduty(0);
   }
 }

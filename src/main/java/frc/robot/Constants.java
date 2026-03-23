@@ -56,20 +56,21 @@ public final class Constants
   }
 
     public static class INDEXER_CONSTANTS{
-    public static final int INDEXER_ID = 4;//SF
+    public static final int INDEXER_ID = 2;//SF
   }
 
   public static class INTAKE_CONSTANTS{
-    public static final int INTAKE_ID = 7;//SM
+    public static final int INTAKE_ID = 3;//SM
   }
 
   public static class HOPPER_CONSTANTS{
-    public static final int HOPPER_ID = 5;//SM
+    public static final int HOPPER_ID = 4;//SM
   }
 
 
   public static class ARM_CONSTANTS{
     public static final int ARM_ID = 6;//SM
+    
 
     public static double kP = 20;
     public static double kD = 0;
@@ -80,17 +81,46 @@ public final class Constants
     public static double kV = 0.01;
     public static double kA = 0; 
 
-    public static Angle LOWER_SOFT_LIMIT = Rotations.of(0.171);
-    public static Angle UPPER_SOFT_LIMIT = Rotations.of(0.555);
+    public static Angle LOWER_SOFT_LIMIT = Rotations.of(0.457);//0.457
+    public static Angle UPPER_SOFT_LIMIT = Rotations.of(0.850);//0.844
 
-    public static Angle LOWER_HARD_LIMIT = Rotations.of(0.171);
-    public static Angle UPPER_HARD_LIMIT = Rotations.of(0.555);
+    public static Angle LOWER_HARD_LIMIT = Rotations.of(0.457);//0.850
+    public static Angle UPPER_HARD_LIMIT = Rotations.of(0.850);
 
-    public static Angle HORIZONTAL_ZERO = Degrees.of(0.481);
+    public static Angle HORIZONTAL_ZERO = Degrees.of(0.844);
     // public final static Mass     WEIGHT = Pounds.of(3);
     // public final static DCMotor  MOTORS = DCMotor.getNEO(1);
     // public final static Distance LENGTH = Inches.of(14);
     // public final static MechanismGearing GEARING = new MechanismGearing(GearBox.fromReductionStages(75));
+    
+
+    public static class ARM_FOLLOWER_CONSTANTS{
+      public static final int ARM_TWO_ID = 5;
+
+      public static double kP = 20;
+      public static double kD = 0;
+      public static double kI = 0;
+
+      public static double kS = 0;
+      public static double kG = 0.005;
+      public static double kV = 0.01;
+      public static double kA = 0; 
+
+      public static Angle LOWER_SOFT_LIMIT = Rotations.of(0.457);//0.457
+      public static Angle UPPER_SOFT_LIMIT = Rotations.of(0.850);//0.844
+
+      public static Angle LOWER_HARD_LIMIT = Rotations.of(0.457);//0.850
+      public static Angle UPPER_HARD_LIMIT = Rotations.of(0.850);
+
+      public static Angle HORIZONTAL_ZERO = Degrees.of(0.844);
+      // public final static Mass     WEIGHT = Pounds.of(3);
+      // public final static DCMotor  MOTORS = DCMotor.getNEO(1);
+      // public final static Distance LENGTH = Inches.of(14);
+      // public final static MechanismGearing GEARING = new MechanismGearing(GearBox.fromReductionStages(75));
+      // public static Angle TOLERANCE = Degrees.of(5);
+      
+
+    }
     public static Angle TOLERANCE = Degrees.of(5);
 
   }
@@ -100,8 +130,8 @@ public final class Constants
 
 
   public static class SHOOTER_CONSTANTS{
-    public static final int SHOOTER_ID = 2;//SF
-    public static final int SHOOTER_TWO_ID = 3;//SF
+    public static final int SHOOTER_ID = 7;//SF
+    public static final int SHOOTER_TWO_ID = 8;//SF
 
     public static double kP = 0.0128;
     public static double kD = 0;
@@ -126,7 +156,7 @@ public final class Constants
   public static class COMMAND_TRAIN_CONSTANTS{
   
     public static final Angle DOWN_ANGLE = Degrees.of(148);
-    public static final Angle SHOOT_ANGLE = Degrees.of(60);
+    public static final Angle SHOOT_ANGLE = Degrees.of(100);
     public static final Angle SAFE_ANGLE = Degrees.of(40);
 
     public static class INTAKING_COMMAND_CONSTANTS {

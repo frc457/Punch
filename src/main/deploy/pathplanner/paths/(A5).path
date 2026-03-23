@@ -48,7 +48,7 @@
   "folder": "LEFT A Auto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 93.094058058917
+    "rotation": 99.7275785514016
   },
   "useDefaultConstraints": true
 }

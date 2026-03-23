@@ -33,30 +33,6 @@
           "data": {
             "name": "CorrnerShoot"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "(C4)"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "(C5)"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "CorrnerShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AutoDone"
-          }
         }
       ]
     }

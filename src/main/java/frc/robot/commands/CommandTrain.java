@@ -57,7 +57,7 @@ public class CommandTrain {
     public Command Intaking(){
 
         return Arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE)
-        .andThen(
+       .andThen(
             Intake.set(INTAKING_COMMAND_CONSTANTS.INTAKE_INTAKE_SPEED)
         .alongWith(Hopper.set(INTAKING_COMMAND_CONSTANTS.HOPPER_INTAKE_SPEED)))
         .beforeStarting(() -> SmartDashboard.putBoolean("Intaking", true))

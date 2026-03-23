@@ -5,39 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "ArmDown"
+            "pathName": "(A1)"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(1)"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "(2)"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "(3)"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "(4)"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot"
+            "pathName": "(A2)"
           }
         },
         {

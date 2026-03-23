@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.9079029957203992,
+        "x": 0.7526390870185449,
         "y": 5.925493975903614
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6971611982881591,
+        "x": 1.5418972895863048,
         "y": 6.486875891583452
       },
       "isLocked": false,
@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.0890442225392292,
-        "y": 7.198502139800285
+        "x": 0.9079029957203992,
+        "y": 7.276134094151213
       },
       "prevControl": {
-        "x": 1.347817403708987,
-        "y": 6.823281027104136
+        "x": 1.166676176890157,
+        "y": 6.900912981455065
       },
       "nextControl": null,
       "isLocked": false,
@@ -37,8 +37,8 @@
       "constraints": {
         "maxVelocity": 4.7,
         "maxAcceleration": 3.2,
-        "maxAngularVelocity": 100.0,
-        "maxAngularAcceleration": 100.0,
+        "maxAngularVelocity": 80.0,
+        "maxAngularAcceleration": 80.0,
         "nominalVoltage": 12.0,
         "unlimited": false
       }
@@ -56,7 +56,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 134.99999999999991
+    "rotation": 140.8263420295558
   },
   "reversed": false,
   "folder": "MIDDLE C Auto",

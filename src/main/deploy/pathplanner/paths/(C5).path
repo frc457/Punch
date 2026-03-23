@@ -20,7 +20,7 @@
         "y": 0.6903566333808839
       },
       "prevControl": {
-        "x": 1.0022541753198972,
+        "x": 1.002254175319898,
         "y": 0.6764891284752512
       },
       "nextControl": null,
@@ -79,7 +79,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -148.7815972356536
+    "rotation": -142.00126755749537
   },
   "reversed": false,
   "folder": "MIDDLE C Auto",
