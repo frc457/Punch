@@ -51,7 +51,7 @@ public class ArmSubsystem extends SubsystemBase
 
       .withClosedLoopController(new ExponentialProfilePIDController(ARM_CONSTANTS.kP, ARM_CONSTANTS.kI, ARM_CONSTANTS.kD, ExponentialProfilePIDController
       .createArmConstraints(Volts.of(10), motors, weight, length, gearing)))
-      .withSoftLimit(Rotations.of(0.032), Rotations.of(0.414))
+      .withSoftLimit(Rotations.of(0.032), Rotations.of(0.420))
       .withGearing(gearing)
       .withExternalEncoder(ArmMotor.getAbsoluteEncoder())
       .withIdleMode(MotorMode.BRAKE)
@@ -73,7 +73,7 @@ public class ArmSubsystem extends SubsystemBase
 
   private       ArmConfig m_config = new ArmConfig(motor)
       .withLength(length)
-      .withHardLimit(Rotations.of(0.032), Rotations.of(0.414))
+      .withHardLimit(Rotations.of(0.032), Rotations.of(0.420))
       .withTelemetry("ArmSubsystem", TelemetryVerbosity.HIGH)
       .withMass(Pounds.of(3))
       //.withStartingPosition(Degrees.of(0))

@@ -16,19 +16,20 @@ public class ShootCommand extends Command
 
     private ShooterSubsystem shooter;
     private IndexerSubsystem indexer;
-    private Command armOscillateCommand;
+    //private Command armOscillateCommand;
     //private Command mixer;
     private HopperSubsytem Hopper;
     private Supplier<AngularVelocity> setpoint;
     
 
-    public ShootCommand(Supplier<AngularVelocity> shootSpeed, ShooterSubsystem shooter, IndexerSubsystem indexer, HopperSubsytem Hopper, Command armOscillate)
+    public ShootCommand(Supplier<AngularVelocity> shootSpeed, ShooterSubsystem shooter, IndexerSubsystem indexer, HopperSubsytem Hopper//, Command armOscillate
+    )
     {
         this.shooter = shooter;
         this.indexer = indexer;
         this.Hopper = Hopper;
         setpoint = shootSpeed;
-         this.armOscillateCommand = armOscillate;
+         //this.armOscillateCommand = armOscillate;
         //this.mixer = mixer;
         addRequirements(shooter, indexer, Hopper);
     }
@@ -60,7 +61,7 @@ public class ShootCommand extends Command
       
         indexer.setduty(-1);
         Hopper.setduty(-1);
-        CommandScheduler.getInstance().schedule(armOscillateCommand);
+        //CommandScheduler.getInstance().schedule(armOscillateCommand);
     }else{
         indexer.setduty(0);
         Hopper.setduty(0);
@@ -97,7 +98,7 @@ public class ShootCommand extends Command
   public void end(boolean interrupted)
   {
  
-    CommandScheduler.getInstance().cancel(armOscillateCommand);
+    //CommandScheduler.getInstance().cancel(armOscillateCommand);
     shooter.setduty(0);
   }
 }

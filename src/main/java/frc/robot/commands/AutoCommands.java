@@ -11,6 +11,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS;
 import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS.INTAKING_COMMAND_CONSTANTS;
+import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS.SHOOTER_SPEED;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.HopperSubsytem;
 
@@ -44,13 +45,30 @@ public class AutoCommands {
         .beforeStarting(() -> SmartDashboard.putBoolean("AutoIntaking", true))
         .finallyDo(interrupted -> SmartDashboard.putBoolean("AutoIntaking", false));
     }
+
         public Command Auto_Intaking_STOP(){
 
-        return 
-            Intake.set(0)
-        .alongWith(Hopper.set(0))
-        .beforeStarting(() -> SmartDashboard.putBoolean("AutoIntaking", true))
-        .finallyDo(interrupted -> SmartDashboard.putBoolean("AutoIntaking", false));
+        return Intake.set(0).withTimeout(0.00001)
+        .alongWith(Hopper.set(0)).withTimeout(0.0001);
+
+    }
+    
+    public Command shoot(){ 
+        return Shooter.setVelocity(SHOOTER_SPEED.SIDE_TRENCH_VELOCITY).withTimeout(1.5)
+        // .alongWith(Indexer.set(-1).withTimeout(1)) 
+        .andThen(Shooter.setVelocity(SHOOTER_SPEED.SIDE_TRENCH_VELOCITY)
+            .alongWith(Indexer.set(-1)) 
+            .alongWith(Hopper.set(-1))).withTimeout(6);
+    }
+
+        public Command shoot_Corrner(){ 
+        return Shooter.setVelocity(SHOOTER_SPEED.CORRNER_VELOCITY).withTimeout(1.5)
+        // .alongWith(Indexer.set(-1).withTimeout(1)) 
+        .andThen(Shooter.setVelocity(SHOOTER_SPEED.CORRNER_VELOCITY)
+            .alongWith(Indexer.set(-1)) 
+            .alongWith(Hopper.set(-1))).withTimeout(6);
+        
+
     }
     
 

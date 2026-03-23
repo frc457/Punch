@@ -152,7 +152,7 @@ public final class Constants
   
   public static class COMMAND_TRAIN_CONSTANTS{
   
-    public static final Angle DOWN_ANGLE = Degrees.of(149);
+    public static final Angle DOWN_ANGLE = Degrees.of(148);
     public static final Angle SHOOT_ANGLE = Degrees.of(60);
     public static final Angle SAFE_ANGLE = Degrees.of(40);
 
@@ -171,6 +171,12 @@ public final class Constants
       public static double HOPPER_OUT_HALF = 0.5;
       public static double INDEXER_OUT_HALF = 0.5;
       public static final AngularVelocity SHOOTER_OUT = RPM.of(-500);
+    }
+    public static class SHOOTER_SPEED{
+      public static final AngularVelocity SIDE_TRENCH_VELOCITY = RPM.of(2600);
+      public static final AngularVelocity CORRNER_VELOCITY = RPM.of(3000);
+      public static final AngularVelocity FAR_VELOCITY = RPM.of(3700);
+      public static final AngularVelocity SHORTER_VELOCITY = RPM.of(2200);
     }
   }
 }

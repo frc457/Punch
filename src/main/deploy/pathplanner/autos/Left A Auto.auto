@@ -5,9 +5,33 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "ArmDown"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Left Start to Pickup A(1)"
+            "pathName": "(1)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(2)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(3)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(4)"
           }
         },
         {
@@ -17,15 +41,9 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Pickup to Shoot A(2)"
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "AutoDone"
           }
         }
       ]

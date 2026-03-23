@@ -7,37 +7,55 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Start to Intake (C1)"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Intaking (C2)"
+            "pathName": " (C1)"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "IntakeStop"
+            "name": "ArmDown"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Intaking to Shoot(C3)"
+            "pathName": "(C2)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(C3)"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "CorrnerShoot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Shoot to Dump(C4)"
+            "pathName": "(C4)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(C5)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "CorrnerShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoDone"
           }
         }
       ]

@@ -13,25 +13,37 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Start to shoot B(1)"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot"
+            "pathName": "B(1)"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Shoot to midfeild B(2)"
+            "pathName": "B(2)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "B(3)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "B(4)"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoDone"
           }
         }
       ]

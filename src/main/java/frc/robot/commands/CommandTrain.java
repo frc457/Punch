@@ -41,13 +41,13 @@ public class CommandTrain {
      //-hopper/indexer = out
 
     // public Command shoot(){ 
-    //     return m_shooter.setVelocity(RPM.of(5000)).withTimeout(1)
-    //     .alongWith(m_indexer.set(-1).withTimeout(1)) 
+    //     return Shooter.setVelocity(RPM.of(2200)).withTimeout(3)
+    //     // .alongWith(Indexer.set(-1).withTimeout(1)) 
     //     .andThen(
-    //         m_intake.set(-1) 
-    //          .alongWith(m_shooter.setVelocity(RPM.of(5000)))
-    //         .alongWith(m_indexer.set(-1)) 
-    //         .alongWith(m_Hopper.set(-1)))
+    //         Intake.set(-1) 
+    //          .alongWith(Shooter.setVelocity(RPM.of(2200))
+    //         .alongWith(Indexer.set(-1)) 
+    //         .alongWith(Hopper.set(-1))).withTimeout(3))
         
     //    .beforeStarting(() -> SmartDashboard.putBoolean("Shoot Running", true))
     //    .finallyDo(interrupted -> SmartDashboard.putBoolean("Shoot Running", false));
