@@ -19,6 +19,7 @@ import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,6 +30,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -44,10 +46,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import org.json.simple.parser.ParseException;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -85,6 +92,7 @@ public class SwerveSubsystem extends SubsystemBase
 
   private PhotonTrackedTarget nearestDesiredTarget = null;
   private int nearestDesiredTargetID = -1;
+  private int aprilTagIDForEstimatedRotation = -1;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -277,7 +285,7 @@ public class SwerveSubsystem extends SubsystemBase
 
           double pidCalculation = pid.calculate(swerveDrive.getYaw().getDegrees(), desiredTarget.getYaw());
           
-          double turnAngle = pidCalculation;
+          double turnAngle = -pidCalculation;
 
           SmartDashboard.putNumber("Aiming at AprilTag", desiredTarget.getFiducialId());
 
@@ -349,6 +357,17 @@ public class SwerveSubsystem extends SubsystemBase
             }
           }
         }
+
+        // If none of the closest targets are hub AprilTags, then estimate the rotation needed to turn toward an AprilTag
+        Optional<Rotation2d> estimatedRobotToAprilTagRotation = getEstimatedRobotToAprilTagRotation(aprilTagIDs);
+
+        if (!(estimatedRobotToAprilTagRotation.isEmpty())) {
+          drive(getTargetSpeeds(0,
+                              0,
+                              estimatedRobotToAprilTagRotation.get()));
+              
+        }
+
       }
 
     }).until(() -> nearestDesiredTargetID != -1)
@@ -379,7 +398,7 @@ public class SwerveSubsystem extends SubsystemBase
 
               double pidCalculation = pid.calculate(swerveDrive.getYaw().getDegrees(), nearestDesiredTarget.getYaw());
               
-              double turnAngle = pidCalculation;
+              double turnAngle = -pidCalculation;
 
               SmartDashboard.putNumber("Aiming at AprilTag", nearestDesiredTarget.getFiducialId());
 
@@ -411,11 +430,63 @@ public class SwerveSubsystem extends SubsystemBase
       }   
      )).finallyDo(() -> {
       nearestDesiredTargetID = -1;
+      aprilTagIDForEstimatedRotation = -1;
       SmartDashboard.putNumber("Aiming at AprilTag", nearestDesiredTargetID);});
   }
 
+  public Optional<Rotation2d> getEstimatedRobotToAprilTagRotation(int[] aprilTagIDs) {
+    Pose2d robotPose = getSwerveDrive().getPose();
+    Translation2d robotPoseTranslation = robotPose.getTranslation();
+    Rotation2d robotPoseRotation = robotPose.getRotation();
+    Map<Integer, Double> aprilTagDistances = new HashMap<>();
 
+    if (aprilTagIDForEstimatedRotation == -1) {
+      for (int tagID: aprilTagIDs) {
+        Pose2d hubTagPose = aprilTagFieldLayout.getTagPose(tagID).get().toPose2d();
+        Translation2d hubTagPoseTranslation = hubTagPose.getTranslation();
 
+        double distanceFromRobotToTag = robotPoseTranslation.getDistance(hubTagPoseTranslation);
+        aprilTagDistances.put(tagID, distanceFromRobotToTag);
+      }
+
+      // Sort the pairs in the HashMap by distance and store in sortedAprilTagDistances
+      Map<Integer, Double> sortedAprilTagDistances = aprilTagDistances.entrySet()
+        .stream()
+        .sorted(Map.Entry.comparingByValue())
+        .collect(Collectors.toMap(
+          Map.Entry::getKey,
+          Map.Entry::getValue,
+          (e1, e2) -> e1,
+          LinkedHashMap::new
+        ));
+
+      Map.Entry<Integer, Double> closestAprilTag = sortedAprilTagDistances.entrySet()
+        .stream()
+        .findFirst()
+        .get();
+
+      aprilTagIDForEstimatedRotation = closestAprilTag.getKey();
+    }
+    else {
+      Pose2d closestAprilTagPose = aprilTagFieldLayout.getTagPose(aprilTagIDForEstimatedRotation).get().toPose2d();
+      Rotation2d closestAprilTagPoseRotation = closestAprilTagPose.getRotation();
+
+      PIDController pid = new PIDController(
+              Constants.aprilTagAimingPID_kP * 0.85,
+              Constants.aprilTagAimingPID_kI, 
+              Constants.aprilTagAimingPID_kD);
+
+      pid.enableContinuousInput(-180, 180);
+
+      double pidCalculation = pid.calculate(robotPoseRotation.getDegrees(), closestAprilTagPoseRotation.getDegrees());
+      
+      double turnAngle = -pidCalculation;
+
+      return Optional.of(Rotation2d.fromDegrees(turnAngle));
+    }
+    
+    return Optional.empty();
+  }
 
   /**
    * Aim the robot at the target returned by PhotonVision.

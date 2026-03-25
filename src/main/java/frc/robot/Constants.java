@@ -49,9 +49,9 @@ public final class Constants
   public static final int blueZoneOutpostCenterTagID = 29;
   public static final int redZoneOutpostCenterTagID = 13;
 
-  public static final double aprilTagAimingPID_kP = 1.0;
+  public static final double aprilTagAimingPID_kP = 0.894;
   public static final double aprilTagAimingPID_kI = 0.0;
-  public static final double aprilTagAimingPID_kD = 0.0;
+  public static final double aprilTagAimingPID_kD = 0.00222;
 
 
  public static final class AutonConstants
