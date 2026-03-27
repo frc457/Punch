@@ -3,46 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.571312410841653,
-        "y": 0.48333808844507875
+        "x": 7.7653922967189715,
+        "y": 3.472168330955778
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.545435092724679,
-        "y": 1.0267617689015687
+        "x": 7.713637660485022,
+        "y": 0.65154065620542
       },
       "isLocked": false,
       "linkedName": "B(2)"
     },
     {
       "anchor": {
-        "x": 7.571312410841653,
-        "y": 3.4333523537803137
+        "x": 3.961426533523537,
+        "y": 0.7421112696148362
       },
       "prevControl": {
-        "x": 7.558373751783165,
-        "y": 2.657032810271042
+        "x": 6.704422253922965,
+        "y": 0.5092154065620549
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "B(3)"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.5419545903257644,
-      "rotationDegrees": 90.95787909952139
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.4500306560392367,
+      "minWaypointRelativePos": 0.0,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 1.0,
-        "maxAcceleration": 1.0,
-        "maxAngularVelocity": 120.0,
+        "maxVelocity": 4.7,
+        "maxAcceleration": 3.2,
+        "maxAngularVelocity": 100.0,
         "maxAngularAcceleration": 100.0,
         "nominalVoltage": 12.0,
         "unlimited": false
@@ -53,8 +48,8 @@
   "eventMarkers": [
     {
       "name": "Intake",
-      "waypointRelativePos": 0.24156958920907173,
-      "endWaypointRelativePos": 0.9822194972409545,
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": 0.6069895769466555,
       "command": {
         "type": "named",
         "data": {
@@ -63,13 +58,13 @@
       }
     },
     {
-      "name": "IntakeStop",
-      "waypointRelativePos": 0.9895769466584882,
+      "name": "MotorStop",
+      "waypointRelativePos": 0.6217044757817284,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "IntakeStop"
+          "name": "MotorStop"
         }
       }
     }
@@ -84,13 +79,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 88.83086067209243
+    "rotation": -100.30484646901579
   },
   "reversed": false,
   "folder": "Right B Auto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 1.5481576989779202
+    "rotation": 87.95459151111277
   },
   "useDefaultConstraints": true
 }

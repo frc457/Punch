@@ -83,39 +83,7 @@ public class RobotContainer
           m_Hopper
   );
 
-//     public Command Shoot() {
-//     return m_CommandTrain.mixer()
-//         .andThen(new ShootCommand(() -> RPM.of(3050),
-//             m_shooter,
-//             m_indexer,
-//             m_Hopper,
-//             armOscillateCommand));
-// }
-//     public Command ShootTWO() {
-//     return m_CommandTrain.mixer()
-//         .andThen(new ShootCommand(() -> RPM.of(3300),
-//             m_shooter,
-//             m_indexer,
-//             m_Hopper,
-//             armOscillateCommand
-//             ));
-// }
-//     public Command ShootTHREE() {
-//     return m_CommandTrain.mixer()
-//         .andThen(new ShootCommand(() -> RPM.of(30),
-//             m_shooter,
-//             m_indexer,
-//             m_Hopper,
-//             armOscillateCommand));
-// }
-//     public Command ShootFOUR() {
-//     return m_CommandTrain.mixer()
-//         .andThen(new ShootCommand(() -> RPM.of(3050),
-//             m_shooter,
-//             m_indexer,
-//             m_Hopper,
-//             armOscillateCommand));
-// }
+
 
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
@@ -189,10 +157,10 @@ public class RobotContainer
     m_shooter, m_indexer, m_Hopper));
     NamedCommands.registerCommand("CorrnerShoot", a_Commands.shoot_Corrner());
     NamedCommands.registerCommand("Intake",  a_Commands.Auto_Intaking());
-    NamedCommands.registerCommand("IntakeStop",  a_Commands.Auto_Intaking_STOP());
+    NamedCommands.registerCommand("MotorStop",  a_Commands.Auto_STOP());
     NamedCommands.registerCommand("AutoDone", Commands.runOnce(() -> SmartDashboard.putBoolean("Auto Finished", true)));
     NamedCommands.registerCommand("ArmDown", m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
-    NamedCommands.registerCommand("ArmUp", m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SHOOT_ANGLE));
+    NamedCommands.registerCommand("ArmUp", m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
     //NamedCommands.registerCommand("ArmUp", m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
     NamedCommands.registerCommand("shoot_strait",  a_Commands.shoot_strait());
 
@@ -212,22 +180,28 @@ public class RobotContainer
   {
 
     m_operatorController.R2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SIDE_TRENCH_VELOCITY,  
-    m_shooter, m_indexer, m_Hopper));
+    m_shooter, m_indexer, m_Hopper, m_intake, armOscillateCommand));
+
     m_operatorController.L2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.CORRNER_VELOCITY,  
-    m_shooter, m_indexer, m_Hopper));
+    m_shooter, m_indexer, m_Hopper, m_intake, armOscillateCommand));
+
     m_operatorController.R1().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SHORTER_VELOCITY,  
-    m_shooter, m_indexer, m_Hopper));
+    m_shooter, m_indexer, m_Hopper, m_intake, armOscillateCommand));
+    
     m_operatorController.L1().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.FAR_VELOCITY,  
-    m_shooter, m_indexer, m_Hopper));
+    m_shooter, m_indexer, m_Hopper, m_intake, armOscillateCommand));
+
     m_operatorController.triangle().whileTrue(m_CommandTrain.Intaking());
     
-    m_operatorController.button(11).whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
-    m_operatorController.button(12).whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
+    m_operatorController.povUp().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
+    m_operatorController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
 
-     m_operatorController.square().whileTrue(m_CommandTrain.throwup());
+    m_operatorController.square().whileTrue(m_CommandTrain.throwup());
+
     m_operatorController.cross().onTrue(m_CommandTrain.mixer());
 
     driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+
     // new Trigger(() -> 
     //     m_operatorController.L1().getAsBoolean() || 
     //     m_operatorController.L2().getAsBoolean() ||

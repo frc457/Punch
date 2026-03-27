@@ -23,18 +23,6 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "(B3)"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "(B4)"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "Shoot"

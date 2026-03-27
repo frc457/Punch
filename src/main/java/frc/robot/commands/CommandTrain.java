@@ -87,8 +87,8 @@ public class CommandTrain {
 
 
     public Command armOscillate() {
-        return Arm.setAngleAndStop(Degrees.of(150))
-            .andThen(Arm.setAngleAndStop(Degrees.of(100)))
+        return Arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE)
+            .andThen(Arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SHOOT_ANGLE))
             .repeatedly()
                 .beforeStarting(() -> SmartDashboard.putBoolean("Arm Oscillating", true))
         .finallyDo(interrupted -> SmartDashboard.putBoolean("Arm Oscillating", false));

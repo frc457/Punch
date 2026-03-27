@@ -33,6 +33,42 @@
           "data": {
             "name": "CorrnerShoot"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "MotorStop"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(C4)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(C5)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(C6)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "CorrnerShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoDone"
+          }
         }
       ]
     }

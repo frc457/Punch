@@ -20,8 +20,8 @@
         "y": 7.314950071326677
       },
       "prevControl": {
-        "x": 7.416048502139798,
-        "y": 7.5996005706134095
+        "x": 7.325477888730385,
+        "y": 7.53490727532097
       },
       "nextControl": null,
       "isLocked": false,
@@ -58,24 +58,13 @@
       }
     },
     {
-      "name": "IntakeStop",
+      "name": "MotorStop",
       "waypointRelativePos": 0.668301655426119,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "IntakeStop"
-        }
-      }
-    },
-    {
-      "name": "Shoot",
-      "waypointRelativePos": 1.0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "Shoot"
+          "name": "MotorStop"
         }
       }
     }

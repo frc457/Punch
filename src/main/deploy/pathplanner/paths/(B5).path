@@ -9,19 +9,19 @@
       "prevControl": null,
       "nextControl": {
         "x": 3.560328102710412,
-        "y": -1.159871611982881
+        "y": -1.1598716119828807
       },
       "isLocked": false,
       "linkedName": "B(5)"
     },
     {
       "anchor": {
-        "x": 7.571312410841653,
-        "y": 3.4333523537803137
+        "x": 3.961426533523537,
+        "y": 0.7421112696148362
       },
       "prevControl": {
-        "x": 10.715406562054206,
-        "y": 2.9804992867332385
+        "x": 7.105520684736089,
+        "y": 0.289258202567761
       },
       "nextControl": null,
       "isLocked": false,
@@ -54,7 +54,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 88.83086067209243
+    "rotation": -100.30484646901579
   },
   "reversed": false,
   "folder": "Right B Auto",

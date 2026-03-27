@@ -47,10 +47,15 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "Intake",
-      "waypointRelativePos": 0.6683016554261181,
-      "endWaypointRelativePos": 0.9944819129368411,
-      "command": null
+      "name": "ArmDown",
+      "waypointRelativePos": 0.13611281422440014,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ArmDown"
+        }
+      }
     }
   ],
   "globalConstraints": {

@@ -31,7 +31,7 @@ public class HopperSubsytem extends SubsystemBase {
 
   public HopperSubsytem() {
      SparkMaxConfig indexerConfig = new SparkMaxConfig();
-    indexerConfig.smartCurrentLimit(60);
+    indexerConfig.smartCurrentLimit(40);
     indexerConfig.idleMode(IdleMode.kCoast);
     HopperMotor.configure(indexerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }

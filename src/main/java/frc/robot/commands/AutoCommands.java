@@ -47,10 +47,12 @@ public class AutoCommands {
         .finallyDo(interrupted -> SmartDashboard.putBoolean("AutoIntaking", false));
     }
 
-        public Command Auto_Intaking_STOP(){
+        public Command Auto_STOP(){
 
         return Intake.set(0).withTimeout(0.00001)
-        .alongWith(Hopper.set(0)).withTimeout(0.0001);
+        .alongWith(Hopper.set(0)).withTimeout(0.0001)
+        .alongWith(Shooter.set(0)).withTimeout(0.00001)
+        .alongWith(Indexer.set(0)).withTimeout(0.00001);
 
     }
     

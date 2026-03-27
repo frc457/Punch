@@ -110,6 +110,8 @@ public void execute()
   {
  
     //CommandScheduler.getInstance().cancel(armOscillateCommand);
-    shooter.setduty(0);
-  }
+    shooter.set(0);
+    indexer.set(0);
+    Hopper.set(0);
+    }
 }

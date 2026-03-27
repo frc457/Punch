@@ -39,7 +39,7 @@ public class ShooterSubsystem extends SubsystemBase {
   //.withSimFeedforward(new SimpleMotorFeedforward(0, 0, 0))
   .withTelemetry("ShooterMotor", TelemetryVerbosity.HIGH)
   .withGearing(new MechanismGearing(GearBox.fromReductionStages(1,1)))
-  .withMotorInverted(false)
+  .withMotorInverted(true)
   .withIdleMode(MotorMode.COAST)
   .withStatorCurrentLimit(Amps.of(40))
   .withFollowers(Pair.of(shootertwo, true));
@@ -49,7 +49,7 @@ public class ShooterSubsystem extends SubsystemBase {
  private final FlyWheelConfig shooterConfig = new FlyWheelConfig(sparkSmartMotorController)
   .withDiameter(Inches.of(2))
   .withMass(Pounds.of(1))
-  .withUpperSoftLimit(SHOOTER_CONSTANTS.LOWER_SOFT_LIMIT)
+  .withUpperSoftLimit(SHOOTER_CONSTANTS.UPPER_SOFT_LIMIT)
   .withTelemetry("ShooterMech", TelemetryVerbosity.HIGH);
 
   private FlyWheel shooter = new FlyWheel(shooterConfig);

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4087874465049923,
-        "y": 5.917574893009986
+        "x": 0.5850639004840457,
+        "y": 7.263742677800074
       },
       "isLocked": false,
       "linkedName": "C(4)"
     },
     {
       "anchor": {
-        "x": 1.9559343794579167,
-        "y": 0.5868473609129818
+        "x": 0.6620684736091293,
+        "y": 7.146747503566334
       },
       "prevControl": {
-        "x": 2.0465049928673325,
-        "y": 0.9232524964336677
+        "x": 0.8978672536325705,
+        "y": 7.691840468714163
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,7 +29,21 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 4.7,
+        "maxAcceleration": 3.2,
+        "maxAngularVelocity": 60.0,
+        "maxAngularAcceleration": 60.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -42,7 +56,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -91.54815769897797
   },
   "reversed": false,
   "folder": "MIDDLE C Auto",

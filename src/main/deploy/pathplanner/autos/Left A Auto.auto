@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "ArmDown"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "(A1)"
@@ -19,7 +25,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AutoDone"
+            "name": "Shoot"
           }
         }
       ]

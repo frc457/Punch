@@ -8,6 +8,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.HopperSubsytem;
 
@@ -16,22 +17,24 @@ public class ShootCommand extends Command
 
     private ShooterSubsystem shooter;
     private IndexerSubsystem indexer;
-    //private Command armOscillateCommand;
+    private Command armOscillateCommand;
     //private Command mixer;
     private HopperSubsytem Hopper;
     private Supplier<AngularVelocity> setpoint;
+    private IntakeSubsystem Intake;
     
 
-    public ShootCommand(Supplier<AngularVelocity> shootSpeed, ShooterSubsystem shooter, IndexerSubsystem indexer, HopperSubsytem Hopper//, Command armOscillate
+    public ShootCommand(Supplier<AngularVelocity> shootSpeed, ShooterSubsystem shooter, IndexerSubsystem indexer, HopperSubsytem Hopper, IntakeSubsystem Intake, Command armOscillate
     )
     {
         this.shooter = shooter;
         this.indexer = indexer;
         this.Hopper = Hopper;
+        this.Intake = Intake;
         setpoint = shootSpeed;
-         //this.armOscillateCommand = armOscillate;
+        this.armOscillateCommand = armOscillate;
         //this.mixer = mixer;
-        addRequirements(shooter, indexer, Hopper);
+        addRequirements(shooter, indexer, Hopper, Intake);
     }
     
     
@@ -61,10 +64,12 @@ public class ShootCommand extends Command
       
         indexer.setduty(-1);
         Hopper.setduty(-1);
-        //CommandScheduler.getInstance().schedule(armOscillateCommand);
+        Intake.set(-0.5);
+        CommandScheduler.getInstance().schedule(armOscillateCommand);
     }else{
         indexer.setduty(0);
         Hopper.setduty(0);
+        Intake.set(0);
     }
   }
 
@@ -98,7 +103,7 @@ public class ShootCommand extends Command
   public void end(boolean interrupted)
   {
  
-    //CommandScheduler.getInstance().cancel(armOscillateCommand);
+    CommandScheduler.getInstance().cancel(armOscillateCommand);
     shooter.setduty(0);
   }
 }

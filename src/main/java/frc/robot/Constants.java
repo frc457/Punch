@@ -72,13 +72,13 @@ public final class Constants
     public static final int ARM_ID = 6;//SM
     
 
-    public static double kP = 20;
+    public static double kP = 5;
     public static double kD = 0;
     public static double kI = 0;
 
     public static double kS = 0;
-    public static double kG = 0.005;
-    public static double kV = 0.01;
+    public static double kG = 0;
+    public static double kV = 0;
     public static double kA = 0; 
 
     public static Angle LOWER_SOFT_LIMIT = Rotations.of(0.457);//0.457
@@ -97,13 +97,13 @@ public final class Constants
     public static class ARM_FOLLOWER_CONSTANTS{
       public static final int ARM_TWO_ID = 5;
 
-      public static double kP = 20;
+      public static double kP = 5  ;
       public static double kD = 0;
       public static double kI = 0;
 
       public static double kS = 0;
-      public static double kG = 0.005;
-      public static double kV = 0.01;
+      public static double kG = 0;
+      public static double kV = 0;
       public static double kA = 0; 
 
       public static Angle LOWER_SOFT_LIMIT = Rotations.of(0.457);//0.457
@@ -121,7 +121,7 @@ public final class Constants
       
 
     }
-    public static Angle TOLERANCE = Degrees.of(5);
+    public static Angle TOLERANCE = Degrees.of(2.5);
 
   }
 
@@ -143,7 +143,7 @@ public final class Constants
     // public final MechanismGearing GEARING = new MechanismGearing(GearBox.fromReductionStages(1,1));
     // public final Mass     WEIGHT = Pounds.of(1);
     // public final Distance DIAMETER = Inches.of(2);
-    public static AngularVelocity LOWER_SOFT_LIMIT = RPM.of(6500);
+    public static AngularVelocity UPPER_SOFT_LIMIT = RPM.of(6500);
 
   }
 
@@ -155,9 +155,9 @@ public final class Constants
   
   public static class COMMAND_TRAIN_CONSTANTS{
   
-    public static final Angle DOWN_ANGLE = Degrees.of(148);
-    public static final Angle SHOOT_ANGLE = Degrees.of(100);
-    public static final Angle SAFE_ANGLE = Degrees.of(40);
+    public static final Angle DOWN_ANGLE = Degrees.of(0);
+    public static final Angle SHOOT_ANGLE = Degrees.of(60);
+    public static final Angle SAFE_ANGLE = Degrees.of(120);
 
     public static class INTAKING_COMMAND_CONSTANTS {
       public static double INTAKE_INTAKE_SPEED = -1;
