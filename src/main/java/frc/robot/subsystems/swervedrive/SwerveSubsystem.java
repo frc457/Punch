@@ -287,7 +287,7 @@ public class SwerveSubsystem extends SubsystemBase
 
           if (robotToAprilTagRotationWithOffset.isEmpty()) {
                 Transform3d robotToCameraTransform = camera.poseEstimator.getRobotToCameraTransform();
-                Transform3d cameraToTagTransform = nearestDesiredTarget.getBestCameraToTarget();
+                Transform3d cameraToTagTransform = desiredTarget.getBestCameraToTarget();
 
                 Translation2d robotToCameraTranslation = robotToCameraTransform.getTranslation().toTranslation2d();
                 Translation2d cameraToTagTranslation = cameraToTagTransform.getTranslation().toTranslation2d();
