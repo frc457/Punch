@@ -159,6 +159,9 @@ public class Vision
                                          pose.timestampSeconds
 );
       }
+      else {
+        System.out.println("NOT seeing any poses");
+      }
     }
 
   }
@@ -443,6 +446,7 @@ public class Vision
       robotToCamTransform = new Transform3d(robotToCamTranslation, robotToCamRotation);
 
       poseEstimator = new PhotonPoseEstimator(Vision.fieldLayout,
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                                               robotToCamTransform);
       poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
       poseEstimator.setFieldTags(Vision.fieldLayout);
@@ -478,6 +482,24 @@ public class Vision
       if (Robot.isSimulation())
       {
         systemSim.addCamera(cameraSim, robotToCamTransform);
+      }
+    }
+
+    public void updatePhotonPoseEstimations() {
+      List<PhotonPipelineResult> unreadResults = camera.getAllUnreadResults();
+
+      for (var result: unreadResults) {
+      
+        Optional<EstimatedRobotPose> estimatedPose = poseEstimator.estimateCoprocMultiTagPose(result);
+
+        if (estimatedPose.isEmpty()) {
+          System.out.println("Multitag pose empty");
+          estimatedPose = poseEstimator.estimateLowestAmbiguityPose(result);
+        }
+        System.out.println("multi tag pose sent to updateestimationstddevs");
+        updateEstimationStdDevs(estimatedPose, result.getTargets());
+
+        estimatedRobotPose = estimatedPose;
       }
     }
 
@@ -647,7 +669,7 @@ public class Vision
         });
         if (!resultsList.isEmpty())
         {
-          updateEstimatedGlobalPose();
+          updatePhotonPoseEstimations();
 
         }
       }
