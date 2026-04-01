@@ -85,7 +85,6 @@ public class RobotContainer
   );
 
   // private final Command armOscillateCommand = m_CommandTrain.armOscillate();
-  private final Command armOscillateCommand = m_CommandTrain.armOscillate();
 
     private final AutoCommands a_Commands = new AutoCommands(
           m_arm,
@@ -114,15 +113,15 @@ public class RobotContainer
           Constants.redZoneHubCenterLeftTagID
         }
       );
-  private final Command shootIntoHubCommand = new ShootIntoHub(Cameras.LEFT_CAM, new int[]{Constants.blueZoneHubLeftTagID,
-          Constants.blueZoneHubRightTagID,
-          Constants.redZoneHubLeftTagID,
-          Constants.redZoneHubRightTagID,
-          Constants.blueZoneHubCenterTagID,
-          Constants.redZoneHubCenterTagID,
-          Constants.blueZoneHubCenterLeftTagID,
-          Constants.redZoneHubCenterLeftTagID
-        }, m_shooter, m_indexer, m_Hopper, drivebase, armOscillateCommand);
+  // private final Command shootIntoHubCommand = new ShootIntoHub(Cameras.LEFT_CAM, new int[]{Constants.blueZoneHubLeftTagID,
+  //         Constants.blueZoneHubRightTagID,
+  //         Constants.redZoneHubLeftTagID,
+  //         Constants.redZoneHubRightTagID,
+  //         Constants.blueZoneHubCenterTagID,
+  //         Constants.redZoneHubCenterTagID,
+  //         Constants.blueZoneHubCenterLeftTagID,
+  //         Constants.redZoneHubCenterLeftTagID
+  //       }, m_shooter, m_indexer, m_Hopper, drivebase, armOscillateCommand);
   
   private final Command aimAtTargetAutoCommand = drivebase.aimAtTarget(Cameras.LEFT_CAM, AutonConstants.aimAtTargetID, false);
   // Do Not Use: private final Command driveToTargetCommand = drivebase.driveToPose(
