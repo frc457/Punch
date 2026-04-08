@@ -53,7 +53,8 @@ public class ShootIntoHub extends Command
         Map.entry(2.8, 3600.0),
         Map.entry(2.9, 3700.0),
         Map.entry(3.0, 3800.0),
-        Map.entry(3.1, 3900.0));
+        Map.entry(3.1, 3900.0),
+      Map.entry(4.0, 4400.0));
     
 
     public ShootIntoHub(Cameras camera, int[] hubAprilTagIDs, ShooterSubsystem shooter, IndexerSubsystem indexer, HopperSubsytem Hopper, SwerveSubsystem swerveSubsystem, Command armOscillate)
@@ -96,10 +97,6 @@ public class ShootIntoHub extends Command
         PhotonPipelineResult cameraResult = cameraInitialResult.get();
         ArrayList<PhotonTrackedTarget> closestTargets = camera.getClosestTargets(cameraResult, swerveDrive.getVision());
 
-        if (closestTargets == null) {
-            return;
-        }
-
         for (PhotonTrackedTarget target: closestTargets) {
           if (target != null) {
             for (int aprilTagID: hubAprilTagIDs) {
@@ -114,7 +111,7 @@ public class ShootIntoHub extends Command
       }
     }
     else { // Once the closest hub AprilTag has been found, then only calculate the distance to that tag
-      double distanceToHubAprilTag = Cameras.LEFT_CAM.getDistanceToHub(swerveDrive.getVision(), new int[]{Constants.blueZoneHubLeftTagID,
+      Optional<Double> distanceToHubAprilTag = Cameras.LEFT_CAM.getDistanceToHub(swerveDrive.getVision(), new int[]{Constants.blueZoneHubLeftTagID,
           Constants.blueZoneHubRightTagID,
           Constants.redZoneHubLeftTagID,
           Constants.redZoneHubRightTagID,
@@ -123,21 +120,25 @@ public class ShootIntoHub extends Command
           Constants.blueZoneHubCenterLeftTagID,
           Constants.redZoneHubCenterLeftTagID
         }, false);
+      
 
-      rotationsSetpoint = RPM.of(interpolatingMap.get(distanceToHubAprilTag));
+      if (distanceToHubAprilTag.isPresent()) {
+        rotationsSetpoint = RPM.of(interpolatingMap.get(distanceToHubAprilTag.get()));
 
-      shooter.setMechanismVelocitySetpoint(rotationsSetpoint);
+        shooter.setMechanismVelocitySetpoint(rotationsSetpoint);
 
-      if (shooter.getVelocity().in(RPM) >= rotationsSetpoint.in(RPM) * 0.95) {
-        //CommandScheduler.getInstance().cancel(mixer);
-        indexer.setduty(-1);
-        Hopper.setduty(-1);
-        CommandScheduler.getInstance().schedule(armOscillateCommand);
+        if (shooter.getVelocity().in(RPM) >= rotationsSetpoint.in(RPM) * 0.95) {
+          //CommandScheduler.getInstance().cancel(mixer);
+          indexer.setduty(-1);
+          Hopper.setduty(-1);
+          CommandScheduler.getInstance().schedule(armOscillateCommand);
+        }
+        else {
+          indexer.setduty(0);
+          Hopper.setduty(0);
+        }
       }
-      else {
-        indexer.setduty(0);
-        Hopper.setduty(0);
-      }
+      
       
       return;
     }

@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutonConstants;
@@ -29,6 +30,7 @@ import frc.robot.commands.AutoCommands;
 import frc.robot.commands.AutoShoot;
 import frc.robot.commands.CommandTrain;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.ShootIntoHub;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.HopperSubsytem;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -108,7 +110,7 @@ public class RobotContainer
   //         Constants.redZoneHubCenterTagID,
   //         Constants.blueZoneHubCenterLeftTagID,
   //         Constants.redZoneHubCenterLeftTagID
-  //       }, m_shooter, m_indexer, m_Hopper, drivebase, armOscillateCommand);
+  //       }, m_shooter, m_indexer, m_Hopper, drivebase, m_CommandTrain.armOscillate());
 
   private final Command aimAtTargetAutoCommand = drivebase.aimAtTarget(Cameras.LEFT_CAM,
                                                                        AutonConstants.aimAtTargetID,
@@ -198,6 +200,7 @@ public class RobotContainer
     autChooser.addOption("Auto Aiming", new AutoAimCommand(drivebase, driveAngularVelocity));
     // autChooser.addOption("Test_One PathPlanner Command", drivebase.getAutonomousCommand("Test_One"));
     autChooser.addOption("Aim at Hub", aimAtHubCommand);
+    // autChooser.addOption("Aim and Shoot at Hub", new ParallelCommandGroup(aimAtHubCommand, shootIntoHubCommand));
 
     // autChooser.addOption("Scoring Position Path", drivebase.getAutonomousCommand("ScoringPosition"));
     SmartDashboard.putData("Auto Chooser", autChooser);

@@ -588,31 +588,27 @@ public class Vision
     return new ArrayList<PhotonTrackedTarget>();
     }
 
-    public double getDistanceToHub(Vision vision, int[] hubAprilTagIDs, boolean updateSmartDashboard) {
+    public Optional<Double> getDistanceToHub(Vision vision, int[] hubTagIDs, boolean updateSmartDashboard) {
       Optional<PhotonPipelineResult> resultO = LEFT_CAM.getBestResult();
-      
+        
       if (resultO.isPresent())
       {
         var result = resultO.get();
 
         ArrayList<PhotonTrackedTarget> closestTargets = LEFT_CAM.getClosestTargets(result, vision); // Returns the top three closest targets or null if not found
 
-        if (closestTargets == null) {
-          return -1.0;
-        }
-
         for (PhotonTrackedTarget target: closestTargets) {
           if (target != null) {
-            for (int aprilTagID: hubAprilTagIDs) {
-              if (target.getFiducialId() == aprilTagID) {
+            for (int tagID: hubTagIDs) {
+              if (target.getFiducialId() == tagID) {
                 double distanceToHub = vision.getDistanceFromAprilTag(target.getFiducialId());
 
                 if (updateSmartDashboard) {
                   SmartDashboard.putNumber("Distance from Hub:", distanceToHub);
                 }
 
-                return distanceToHub;
-              }
+                return Optional.of(distanceToHub);
+            }
             }
           }
         }
@@ -620,7 +616,7 @@ public class Vision
           SmartDashboard.putNumber("Distance from Hub:", -1);
         }
       }
-      return -1.0;
+      return Optional.empty();
     }
 
 
