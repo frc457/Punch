@@ -200,7 +200,7 @@ public class RobotContainer
     autChooser.addOption("Auto Aiming", new AutoAimCommand(drivebase, driveAngularVelocity));
     // autChooser.addOption("Test_One PathPlanner Command", drivebase.getAutonomousCommand("Test_One"));
     autChooser.addOption("Aim at Hub", aimAtHubCommand);
-    // autChooser.addOption("Aim and Shoot at Hub", new ParallelCommandGroup(aimAtHubCommand, shootIntoHubCommand));
+    // autChooser.addOption("Aim and Shoot at Hub", new ParallelCommandGroup(aimAtHubCommand, shootIntoHubCommand).withTimeout(3));
 
     // autChooser.addOption("Scoring Position Path", drivebase.getAutonomousCommand("ScoringPosition"));
     SmartDashboard.putData("Auto Chooser", autChooser);
