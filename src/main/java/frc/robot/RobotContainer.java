@@ -197,7 +197,7 @@ public class RobotContainer
     autChooser = AutoBuilder.buildAutoChooser("MiddleAuto");
     NamedCommands.registerCommand("Aim at Target Command", aimAtTargetAutoCommand);
     autChooser.addOption("Aim at Target Command", aimAtTargetAutoCommand);
-    autChooser.addOption("Auto Aiming", new AutoAimCommand(drivebase, driveAngularVelocity));
+    // autChooser.addOption("Auto Aiming", new AutoAimCommand(drivebase, driveAngularVelocity));
     // autChooser.addOption("Test_One PathPlanner Command", drivebase.getAutonomousCommand("Test_One"));
     autChooser.addOption("Aim at Hub", aimAtHubCommand);
     // autChooser.addOption("Aim and Shoot at Hub", new ParallelCommandGroup(aimAtHubCommand, shootIntoHubCommand).withTimeout(3));
@@ -337,7 +337,7 @@ public class RobotContainer
     //m_operatorController.button(1).whileTrue(new ShootCommand(()-> RPM.of(5000), m_shooter, m_indexer, m_Hopper));
 
     // Aim at the nearest AprilTag on the hub
-    driverController.R3().whileTrue(new AutoAimCommand(drivebase, driveAngularVelocity));
+    driverController.R3().whileTrue(aimAtHubCommand);
 
     // Aim and shoot at the hub
     // driverController.R3().whileTrue(
