@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 3.8449786019971466,
-        "y": 7.392582025677603
+        "x": 3.7544079885877313,
+        "y": 7.224379457917262
       },
       "prevControl": {
-        "x": 7.247845934379457,
-        "y": 7.612539229671897
+        "x": 7.5066191155492135,
+        "y": 7.2890727532097
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "A3"
     }
   ],
   "rotationTargets": [],
@@ -35,7 +35,7 @@
       "minWaypointRelativePos": 0,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 4.7,
+        "maxVelocity": 3.0,
         "maxAcceleration": 3.2,
         "maxAngularVelocity": 100.0,
         "maxAngularAcceleration": 100.0,
@@ -82,7 +82,7 @@
     "rotation": 97.35237935989238
   },
   "reversed": false,
-  "folder": "LEFT A Auto",
+  "folder": "A AUTO",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -92.29061004263853

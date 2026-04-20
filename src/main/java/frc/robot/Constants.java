@@ -156,7 +156,7 @@ public final class Constants
   public static class COMMAND_TRAIN_CONSTANTS{
   
     public static final Angle DOWN_ANGLE = Degrees.of(0);
-    public static final Angle SHOOT_ANGLE = Degrees.of(60);
+    public static final Angle SHOOT_ANGLE = Degrees.of(50);
     public static final Angle SAFE_ANGLE = Degrees.of(120);
 
     public static class INTAKING_COMMAND_CONSTANTS {
@@ -171,15 +171,15 @@ public final class Constants
     }
 
     public static class THROWUP_COMMAND_CONSTANTS{
-      public static double INTAKE_OUT = 0.75;
-      public static double HOPPER_OUT = 0.75;
-      public static double INDEXER_OUT = 0.75;
+      public static double INTAKE_OUT = 1;
+      public static double HOPPER_OUT = 1;
+      public static double INDEXER_OUT = 1;
       public static final AngularVelocity SHOOTER_OUT = RPM.of(-500);
     }
     public static class SHOOTER_SPEED{
       public static final AngularVelocity SIDE_TRENCH_VELOCITY = RPM.of(2600);
       public static final AngularVelocity CORRNER_VELOCITY = RPM.of(3000);
-      public static final AngularVelocity FAR_VELOCITY = RPM.of(3700);
+      public static final AngularVelocity FAR_VELOCITY = RPM.of(5000);//3700);
       public static final AngularVelocity SHORTER_VELOCITY = RPM.of(2800);
     }
   }

@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -31,6 +32,7 @@ import frc.robot.commands.AutoCommands;
 //import frc.robot.commands.AutoIntaking;
 import frc.robot.commands.AutoShoot;
 import frc.robot.commands.CommandTrain;
+import frc.robot.commands.FairyCommand;
 //import frc.robot.commands.PulseCommand;
 import frc.robot.commands.ShootCommand;
 //import frc.robot.subsystems.ArmSubsystem;
@@ -45,6 +47,9 @@ import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Degrees;
 import java.io.File;
+
+import org.dyn4j.dynamics.joint.WheelJoint;
+
 import swervelib.SwerveInputStream;
 
 /**
@@ -55,8 +60,8 @@ import swervelib.SwerveInputStream;
 public class RobotContainer
 {
   
-
-  private final  CommandPS5Controller driverController = new CommandPS5Controller(0);
+  private final CommandPS5Controller driverController = new CommandPS5Controller(0);
+  //private final  CommandPS5Controller driverController = new CommandPS5Controller(0);
   private final CommandPS5Controller m_operatorController = new CommandPS5Controller(1);
 
    private final ArmSubsystem m_arm = new ArmSubsystem();
@@ -87,6 +92,7 @@ public class RobotContainer
           m_Hopper
           
   );
+
 
 
 
@@ -161,9 +167,9 @@ public class RobotContainer
     //NamedCommands.registerCommand("Shoot", a_Commands.shoot());
     //NamedCommands.registerCommand("CorrnerShoot", a_Commands.shoot_Corrner());
     NamedCommands.registerCommand("Shoot", new AutoShoot(() -> SHOOTER_SPEED.SIDE_TRENCH_VELOCITY,  
-    m_shooter, m_indexer, m_Hopper, m_intake, 5));
+    m_shooter, m_indexer, m_Hopper, m_intake, 3));
     NamedCommands.registerCommand("CorrnerShoot", new AutoShoot(() -> SHOOTER_SPEED.CORRNER_VELOCITY,  
-    m_shooter, m_indexer, m_Hopper, m_intake,  5));
+    m_shooter, m_indexer, m_Hopper, m_intake,  6));
     NamedCommands.registerCommand("Mix", m_CommandTrain.mixer());
     NamedCommands.registerCommand("Intake",  a_Commands.Auto_Intaking());
     NamedCommands.registerCommand("MotorStop",  a_Commands.Auto_STOP());
@@ -188,7 +194,7 @@ public class RobotContainer
   private void configureBindings()
   {
 
-    m_operatorController.R2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SIDE_TRENCH_VELOCITY,  
+  m_operatorController.R2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SIDE_TRENCH_VELOCITY,  
                                                               m_shooter, 
                                                               m_indexer, 
                                                               m_Hopper,
@@ -211,16 +217,28 @@ public class RobotContainer
                                                               m_intake, 
                                                               armOscillateCommand
                                                               ));
-    
-    m_operatorController.L1().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.FAR_VELOCITY,  
+                                                            
+    m_operatorController.L1().whileTrue(new FairyCommand(() -> SHOOTER_SPEED.FAR_VELOCITY,  
                                                               m_shooter, 
                                                               m_indexer, 
                                                               m_Hopper,
-                                                              m_intake, 
-                                                              armOscillateCommand
+                                                              m_intake//, 
+                                                              //m_arm
                                                               ));
 
+    
+    // m_operatorController.L1().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.FAR_VELOCITY,  
+    //                                                           m_shooter, 
+    //                                                           m_indexer, 
+    //                                                           m_Hopper,
+    //                                                           m_intake, 
+    //                                                           armOscillateCommand
+    //                                                           ));
+
+
     m_operatorController.L1().onFalse(m_CommandTrain.mixer());
+    m_operatorController.L1().onFalse(m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
+    m_operatorController.L1().onTrue(m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
     m_operatorController.L2().onFalse(m_CommandTrain.mixer());
     m_operatorController.R1().onFalse(m_CommandTrain.mixer());
     m_operatorController.R2().onFalse(m_CommandTrain.mixer());
@@ -230,6 +248,50 @@ public class RobotContainer
 
     m_operatorController.povUp().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
     m_operatorController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
+
+    //m_operatorController.R3().whileTrue(m_CommandTrain.armOscillate());
+    // driverController.R2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SIDE_TRENCH_VELOCITY,  
+    //                                                           m_shooter, 
+    //                                                           m_indexer, 
+    //                                                           m_Hopper,
+    //                                                           m_intake, 
+    //                                                           armOscillateCommand
+    //                                                           ));
+
+    // driverController.L2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.CORRNER_VELOCITY,  
+    //                                                           m_shooter, 
+    //                                                           m_indexer, 
+    //                                                           m_Hopper,
+    //                                                           m_intake, 
+    //                                                           armOscillateCommand
+    //                                                           ));
+
+    // driverController.R1().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SHORTER_VELOCITY,  
+    //                                                           m_shooter, 
+    //                                                           m_indexer, 
+    //                                                           m_Hopper,
+    //                                                           m_intake, 
+    //                                                           armOscillateCommand
+    //                                                           ));
+    
+    // m_operatorController.L1().whileTrue(new FairyCommand(() -> SHOOTER_SPEED.FAR_VELOCITY,  
+    //                                                           m_shooter, 
+    //                                                           m_indexer, 
+    //                                                           m_Hopper,
+    //                                                           m_intake, 
+    //                                                           m_arm
+    //                                                           ));                                 
+
+    // // driverController.L1().onFalse(m_CommandTrain.mixer());
+    // // driverController.L2().onFalse(m_CommandTrain.mixer());
+    // // driverController.R1().onFalse(m_CommandTrain.mixer());
+    // // driverController.R2().onFalse(m_CommandTrain.mixer());
+
+    // // driverController.L1().whileTrue(m_CommandTrain.Intaking());
+    // // driverController.triangle().whileTrue(m_CommandTrain.throwup());
+
+    // // driverController.povUp().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
+    // // driverController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
 
     driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
 
@@ -339,25 +401,25 @@ public class RobotContainer
     {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides drive command above!
 
-      driverController.square().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-      driverController.triangle().whileTrue(drivebase.driveToDistanceCommand(1.0, 0.2));
-      driverController.create().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-      driverController.options().whileTrue(drivebase.centerModulesCommand());
-      //driverController.L1().onTrue(Commands.none());
-      driverController.R1().onTrue(Commands.none());
-    } else
-    {
-      //driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-      driverController.square().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
-      driverController.circle().whileTrue(
-          drivebase.driveToPose(
-              new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0)))
-                              );
-      driverController.create().whileTrue(Commands.none());
-      driverController.options().whileTrue(Commands.none());
-      //driverController.L1().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-      driverController.R1().onTrue(Commands.none());
-    }
+    //   driverController.square().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+    //   driverController.triangle().whileTrue(drivebase.driveToDistanceCommand(1.0, 0.2));
+    //   driverController.create().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    //   driverController.options().whileTrue(drivebase.centerModulesCommand());
+    //   //driverController.L1().onTrue(Commands.none());
+    //   driverController.R1().onTrue(Commands.none());
+    // } else
+    // {
+    //   //driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    //   driverController.square().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
+    //   driverController.circle().whileTrue(
+    //       drivebase.driveToPose(
+    //           new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0)))
+    //                           );
+    //   driverController.create().whileTrue(Commands.none());
+    //   driverController.options().whileTrue(Commands.none());
+    //   //driverController.L1().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+    //   driverController.R1().onTrue(Commands.none());
+     }
 
   }
 

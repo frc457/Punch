@@ -11,12 +11,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "ArmDown"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "(C2)"

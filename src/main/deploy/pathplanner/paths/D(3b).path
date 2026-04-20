@@ -3,53 +3,39 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.6620684736091293,
-        "y": 7.146747503566334
+        "x": 0.4550499286733236,
+        "y": 5.128316690442225
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.41821201757985893,
-        "y": 7.091665484242016
+        "x": 1.1537375178316682,
+        "y": 5.244764621968616
       },
       "isLocked": false,
-      "linkedName": "C(5)"
+      "linkedName": "D(2b)"
     },
     {
       "anchor": {
-        "x": 0.45668674698795175,
-        "y": 6.460951807228916
+        "x": 0.8432097004279597,
+        "y": 6.875035663338089
       },
       "prevControl": {
-        "x": 0.6753802743655576,
-        "y": 6.792604045318716
+        "x": 1.101982881597717,
+        "y": 6.370427960057062
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "C(6)"
+      "linkedName": "D(3b)"
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "Constraints Zone",
-      "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 1.0,
-      "constraints": {
-        "maxVelocity": 1.0,
-        "maxAcceleration": 1.0,
-        "maxAngularVelocity": 180.0,
-        "maxAngularAcceleration": 135.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "Intake",
       "waypointRelativePos": 0,
-      "endWaypointRelativePos": 0.9773145309625912,
+      "endWaypointRelativePos": 0.9895769466584944,
       "command": {
         "type": "named",
         "data": {
@@ -59,7 +45,7 @@
     },
     {
       "name": "IntakeStop",
-      "waypointRelativePos": 0.99,
+      "waypointRelativePos": 1.0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -79,13 +65,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -89.53403193620254
+    "rotation": -122.36661569122585
   },
   "reversed": false,
-  "folder": "C AUTO",
+  "folder": "D Auto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -91.54815769897797
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

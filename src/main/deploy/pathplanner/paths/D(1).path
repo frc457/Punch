@@ -3,52 +3,39 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.8320399429386587,
-        "y": 7.5996005706134095
+        "x": 3.508573466476462,
+        "y": 4.041469329529244
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.497403708987161,
-        "y": 7.6125392296718974
+        "x": 2.3958487874465044,
+        "y": 4.597831669044222
       },
       "isLocked": false,
-      "linkedName": "A(1)"
+      "linkedName": "D(1)"
     },
     {
       "anchor": {
-        "x": 7.90771754636234,
-        "y": 4.377874465049929
+        "x": 0.4239036144578311,
+        "y": 4.789012048192771
       },
       "prevControl": {
-        "x": 8.14061340941512,
-        "y": 6.266918687589158
+        "x": 1.032020590206761,
+        "y": 4.776073389134283
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "A(2)"
+      "linkedName": "D(2)"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.5334150827713011,
-      "maxWaypointRelativePos": 0.9748620478234198,
-      "constraints": {
-        "maxVelocity": 2.7,
-        "maxAcceleration": 1.2,
-        "maxAngularVelocity": 180.0,
-        "maxAngularAcceleration": 135.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    },
-    {
-      "name": "Constraints Zone",
       "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 0.45984058859595517,
+      "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 3.0,
+        "maxVelocity": 2.0,
         "maxAcceleration": 3.2,
         "maxAngularVelocity": 180.0,
         "maxAngularAcceleration": 135.0,
@@ -60,13 +47,13 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "Intake",
-      "waypointRelativePos": 0.33231146535867523,
-      "endWaypointRelativePos": 1.0,
+      "name": "ArmDown",
+      "waypointRelativePos": 0.10913549969343933,
+      "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "Intake"
+          "name": "ArmDown"
         }
       }
     }
@@ -81,10 +68,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -92.29061004263853
+    "rotation": 90.0
   },
   "reversed": false,
-  "folder": "A AUTO",
+  "folder": "D Auto",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

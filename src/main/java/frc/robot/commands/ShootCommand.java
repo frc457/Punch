@@ -67,11 +67,12 @@ public class ShootCommand extends Command
   public void execute()
   {
     shooter.setMechanismVelocitySetpoint(setpoint.get());
-    if (shooter.getVelocity().in(RPM) >= setpoint.get().in(RPM) * 0.95)
+    if (shooter.getVelocity().in(RPM) >= setpoint.get().in(RPM) * 0.90)
     {
       
       indexer.setduty(-1);
       Intake.setduty(-0.8);
+      Hopper.setduty(-1);
 
 
       if (!CommandScheduler.getInstance().isScheduled(armOscillateCommand)) {
@@ -80,17 +81,17 @@ public class ShootCommand extends Command
 
 
         
-      if (goingUp) {
-        speed += 0.05;
-        if (speed >= -0.5) goingUp = false;
+      // if (goingUp) {
+      //   speed += 0.05;
+      //   if (speed >= -0.5) goingUp = false;
     
-      } else {
-        speed -= 0.05;
-        if (speed <= -1.0) goingUp = true;
-      }
+      // } else {
+      //   speed -= 0.05;
+      //   if (speed <= -1.0) goingUp = true;
+      // }
 
-      Hopper.setduty(speed);
-      SmartDashboard.putNumber("Pulse Speed", speed);
+      // Hopper.setduty(speed);
+      // SmartDashboard.putNumber("Pulse Speed", speed);
         
     }else{
         indexer.setduty(0);
@@ -132,6 +133,7 @@ public class ShootCommand extends Command
     CommandScheduler.getInstance().cancel(armOscillateCommand);
     shooter.setduty(0);
     indexer.setduty(0);
+    Intake.setduty(0);
     Hopper.setduty(0);
 
     

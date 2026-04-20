@@ -59,10 +59,10 @@
     "rotation": -91.54815769897797
   },
   "reversed": false,
-  "folder": "MIDDLE C Auto",
+  "folder": "C AUTO",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 140.8263420295558
+    "rotation": 136.12330271407546
   },
   "useDefaultConstraints": true
 }

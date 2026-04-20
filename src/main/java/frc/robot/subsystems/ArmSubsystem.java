@@ -183,6 +183,10 @@ public class ArmSubsystem extends SubsystemBase
     return arm.runTo(angle, ARM_CONSTANTS.TOLERANCE);
   }
   
+  public void setArmAngle(Angle angle)
+  {
+    arm.setAngle(angle);
+  }
 
 
 

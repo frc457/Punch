@@ -5,48 +5,51 @@ import static edu.wpi.first.units.Units.RPM;
 import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.Constants.ARM_CONSTANTS;
+import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.HopperSubsytem;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class AutoShoot extends Command
+public class FairyCommand extends Command
 {
 
     private ShooterSubsystem shooter;
     private IndexerSubsystem indexer;
-    private IntakeSubsystem Intake;
+    //private ArmSubsystem Arm;
     private HopperSubsytem Hopper;
     private Supplier<AngularVelocity> setpoint;
-    private double time;
-    private Timer timer = new Timer();
-    private boolean feeding = false;
+    private IntakeSubsystem Intake;
     double speed = -1.0;
     boolean goingUp = true;
-    //Command armOscilate;
     
 
-    public AutoShoot(Supplier<AngularVelocity> shootSpeed, 
-                     ShooterSubsystem shooter, 
-                     IndexerSubsystem indexer, 
-                     HopperSubsytem Hopper, 
-                     IntakeSubsystem Intake, 
-                     double time//,
-                     //Command armocsillate
-    ){
+    public FairyCommand(Supplier<AngularVelocity> shootSpeed, 
+                        ShooterSubsystem shooter, 
+                        IndexerSubsystem indexer, 
+                        HopperSubsytem Hopper, 
+                        IntakeSubsystem Intake//, 
+                        //ArmSubsystem Arm
+    )
+    {
         this.shooter = shooter;
         this.indexer = indexer;
         this.Hopper = Hopper;
         this.Intake = Intake;
-        //armOscilate = armocsillate;
         setpoint = shootSpeed;
-        this.time = time;
-        addRequirements(shooter, indexer, Hopper, 
-        Intake);
+        //this.Arm = Arm;
+
+        addRequirements(shooter, 
+        indexer, 
+        Hopper,
+        Intake//, 
+        //Arm
+        );
     }
     
     
@@ -57,9 +60,7 @@ public class AutoShoot extends Command
   public void initialize()
   {
     shooter.setMechanismVelocitySetpoint(setpoint.get());
-      timer.reset();
-      timer.stop();
-      feeding = false;
+    // Arm.setArmAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE);
     
   }
 
@@ -67,46 +68,41 @@ public class AutoShoot extends Command
    * The main body of a command.  Called repeatedly while the command is scheduled. (That is, it is called repeatedly
    * until {@link #isFinished()}) returns true.)
    */
-@Override
-public void execute()
-{
-    shooter.setMechanismVelocitySetpoint(setpoint.get());
-
-
-
-    if (shooter.getVelocity().in(RPM) >= setpoint.get().in(RPM) * 0.95)
-    {
-        if (!feeding)
-        {
-            timer.start();   // start timing ONLY once we hit speed
-            feeding = true;
-        }
-
-        indexer.setduty(-1);
-        Intake.setduty(-0.8);
-      
-       // CommandScheduler.getInstance().schedule(armOscilate);
-      
- 
-        if (goingUp) {
-          speed += 0.05;
-          if (speed >= -0.5) goingUp = false;
+  @Override
+  public void execute()
+  {
     
-        } else {
-          speed -= 0.05;
-          if (speed <= -1.0) goingUp = true;
-        }
 
-        Hopper.setduty(speed);
-        SmartDashboard.putNumber("Pulse Speed", speed);
-    }
-    else
+    shooter.setMechanismVelocitySetpoint(setpoint.get());
+    if (shooter.getVelocity().in(RPM) >= setpoint.get().in(RPM) * 0.90)
     {
+      
+      indexer.setduty(-1);
+      Intake.setduty(-1);
+      Hopper.setduty(-1);
+
+
+
+
+        
+      // if (goingUp) {
+      //   speed += 0.05;
+      //   if (speed >= -0.5) goingUp = false;
+    
+      // } else {
+      //   speed -= 0.05;
+      //   if (speed <= -1.0) goingUp = true;
+      // }
+
+      // Hopper.setduty(speed);
+      // SmartDashboard.putNumber("Pulse Speed", speed);
+        
+    }else{
         indexer.setduty(0);
         Hopper.setduty(0);
         Intake.setduty(0);
     }
-}
+  }
 
   /**
    * <p>
@@ -124,7 +120,7 @@ public void execute()
   @Override
   public boolean isFinished()
   {
-    return feeding && timer.get() >= time;
+    return false;
   }
 
   /**
@@ -138,14 +134,12 @@ public void execute()
   public void end(boolean interrupted)
   {
  
-
+    
     shooter.setduty(0);
     indexer.setduty(0);
+    Intake.setduty(0);
     Hopper.setduty(0);
-    //CommandScheduler.getInstance().cancel(armOscilate);
-    }
 
-    public boolean shooterReady() {
-      return shooter.getVelocity().in(RPM) >= setpoint.get().in(RPM) * 0.95;
-    }
+    
+  }
 }

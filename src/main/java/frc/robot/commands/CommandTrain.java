@@ -29,7 +29,8 @@ public class CommandTrain {
      IndexerSubsystem Indexer, 
         IntakeSubsystem Intake, 
         ShooterSubsystem Shooter, 
-        HopperSubsytem Hopper){
+        HopperSubsytem Hopper)
+        {
         this.Arm = Arm;
         this.Indexer = Indexer;
         this.Intake = Intake;
@@ -67,9 +68,9 @@ public class CommandTrain {
     }
 
     public Command mixer(){
-        return Hopper.set(MIXER_COMMAND_CONSTANTS.HOPPER_OUT).withTimeout(0.2)
+        return Hopper.set(MIXER_COMMAND_CONSTANTS.HOPPER_OUT).withTimeout(0.5)
         .andThen(Hopper.set(MIXER_COMMAND_CONSTANTS.HOPPER_IN).withTimeout(0.2))
-        .andThen(Hopper.set(MIXER_COMMAND_CONSTANTS.HOPPER_OUT).withTimeout(0.2))
+        .andThen(Hopper.set(MIXER_COMMAND_CONSTANTS.HOPPER_OUT).withTimeout(0.5))
         .beforeStarting(() -> SmartDashboard.putBoolean("Mixing", true))
         .finallyDo(interrupted -> SmartDashboard.putBoolean("Mixing", false));
     }
@@ -91,7 +92,7 @@ public class CommandTrain {
     public Command armOscillate() {
         return Arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE)
             .andThen(Arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SHOOT_ANGLE))
-            //.repeatedly()
+            .repeatedly()
                 .beforeStarting(() -> SmartDashboard.putBoolean("Arm Oscillating", true))
         .finallyDo(interrupted -> SmartDashboard.putBoolean("Arm Oscillating", false));
     }

@@ -1,0 +1,56 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D(1)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D(2b)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D(3b)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D(4b)"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "ArmUp"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "CorrnerShoot"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
