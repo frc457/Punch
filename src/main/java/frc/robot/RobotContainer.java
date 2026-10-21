@@ -108,7 +108,7 @@ public class RobotContainer
   SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
                                                                 () -> -driverController.getLeftY() * 1,
                                                                 () -> -driverController.getLeftX() * 1)
-                                                                .withControllerRotationAxis(()->-driverController.getRightX())
+                                                                .withControllerRotationAxis(()->driverController.getRightX())
                                                                 .deadband(OperatorConstants.DEADBAND)
                                                                 .scaleTranslation(0.8)
                                                                 .allianceRelativeControl(true);
@@ -285,21 +285,21 @@ public class RobotContainer
     //                                                           ));                                 
 
     // driverController.L1().onFalse(m_CommandTrain.mixer());
-    driverController.L2().onFalse(m_CommandTrain.mixer());
-    // driverController.R1().onFalse(m_CommandTrain.mixer());
-    driverController.R2().onFalse(m_CommandTrain.mixer());
+    // driverController.L2().onFalse(m_CommandTrain.mixer());
+    // // driverController.R1().onFalse(m_CommandTrain.mixer());
+    // driverController.R2().onFalse(m_CommandTrain.mixer());
 
-    driverController.L1().whileTrue(m_CommandTrain.Intaking());
-    driverController.R1().whileTrue(m_CommandTrain.throwup());
+    // driverController.L1().whileTrue(m_CommandTrain.Intaking());
+    // driverController.R1().whileTrue(m_CommandTrain.throwup());
 
-    driverController.povUp().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
-    driverController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
-    driverController.circle().whileTrue(m_CommandTrain.armOscillate());
+    // driverController.povUp().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
+    // driverController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
+    // driverController.circle().whileTrue(m_CommandTrain.armOscillate());
 
     driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
 
-    driverController.button(1).onTrue(new AimCommand(drivebase));
-    driverController.button(2).onTrue(new ToggleAimCommand(drivebase));
+    driverController.R3().whileTrue(new AimCommand(drivebase));
+    driverController.L3().onTrue(new ToggleAimCommand(drivebase));
 
 
     // m_operatorController.button(1).onTrue( new AutoShoot(() -> SHOOTER_SPEED.CORRNER_VELOCITY,  

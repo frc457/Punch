@@ -19,6 +19,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.units.Unit;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -148,11 +149,14 @@ public class Vision
       Optional<EstimatedRobotPose> poseEst = getEstimatedGlobalPose(camera);
       if (poseEst.isPresent())
       {
+        System.out.println("poseEst is present");
         var pose = poseEst.get();
         swerveDrive.addVisionMeasurement(pose.estimatedPose.toPose2d(),
                                          pose.timestampSeconds,
                                          camera.curStdDevs);
-      }
+       }//else {
+      //   System.out.println("poseEst is not present");
+      // }
     }
 
   }
@@ -289,15 +293,15 @@ public class Vision
   {
     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
     {
-     try
-     {
-       Desktop.getDesktop().browse(new URI("http://localhost:1182/"));
-       Desktop.getDesktop().browse(new URI("http://localhost:1184/"));
-       //Desktop.getDesktop().browse(new URI("http://localhost:1186/"));
-     } catch (IOException | URISyntaxException e)
-     {
-       e.printStackTrace();
-     }
+    //  try
+    //  {
+    //    Desktop.getDesktop().browse(new URI("http://localhost:1182/"));
+    //    Desktop.getDesktop().browse(new URI("http://localhost:1184/"));
+    //    //Desktop.getDesktop().browse(new URI("http://localhost:1186/"));
+    //  } catch (IOException | URISyntaxException e)
+    //  {
+    //    e.printStackTrace();
+    //  }
     }
   }
 
@@ -341,30 +345,31 @@ public class Vision
     /**
      * Left Camera
      */
-    FRONT_CAM("front",
-             new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(180.0)),
-             new Translation3d(Units.inchesToMeters(0.0),
-                               Units.inchesToMeters(0.0),
-                               Units.inchesToMeters(0.0)),
+    cam2("cam2",
+             new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(0)),
+             new Translation3d(Units.inchesToMeters(10.0),
+                               Units.inchesToMeters(-3),
+                               Units.inchesToMeters(18.5)),
              VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
     /**
      * Right Camera
      */
-    BACK_CAM("back",
-              new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(0.0)),
-              new Translation3d(Units.inchesToMeters(0.0),
-                                Units.inchesToMeters(0.0),
-                                Units.inchesToMeters(0.0)),
-              VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1));
+    cam1("cam1",
+              new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(-90)),
+              new Translation3d(Units.inchesToMeters(13),
+                                Units.inchesToMeters(-5.5),
+                                Units.inchesToMeters(18.5)),
+              VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
+
     /**
      * Center Camera
      */
-    // CENTER_CAM("center",
-    //            new Rotation3d(0, Units.degreesToRadians(18), 0),
-    //            new Translation3d(Units.inchesToMeters(-4.628),
-    //                              Units.inchesToMeters(-10.687),
-    //                              Units.inchesToMeters(16.129)),
-    //            VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1));
+    cam3("cam3",
+               new Rotation3d(0, Math.toRadians(0), Math.toRadians(270)),
+               new Translation3d(Units.inchesToMeters(-13),
+                                 Units.inchesToMeters(-5.5),
+                                 Units.inchesToMeters(18.5)),
+               VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1));
 
     /**
      * Latency alert to use when high latency is detected.
@@ -433,7 +438,7 @@ public class Vision
       robotToCamTransform = new Transform3d(robotToCamTranslation, robotToCamRotation);
 
       poseEstimator = new PhotonPoseEstimator(Vision.fieldLayout,
-                                              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+                                              PoseStrategy.AVERAGE_BEST_TARGETS,
                                               robotToCamTransform);
       poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
@@ -527,17 +532,17 @@ public class Vision
     private void updateUnreadResults()
     {
       double mostRecentTimestamp = resultsList.isEmpty() ? 0.0 : resultsList.get(0).getTimestampSeconds();
-      double currentTimestamp    = Microseconds.of(NetworkTablesJNI.now()).in(Seconds);
-      double debounceTime        = Milliseconds.of(15).in(Seconds);
+      // double currentTimestamp    = Microseconds.of(NetworkTablesJNI.now()).in(Seconds);
+      // double debounceTime        = Milliseconds.of(15).in(Seconds);
       for (PhotonPipelineResult result : resultsList)
       {
         mostRecentTimestamp = Math.max(mostRecentTimestamp, result.getTimestampSeconds());
       }
-      if ((resultsList.isEmpty() || (currentTimestamp - mostRecentTimestamp >= debounceTime)) &&
-          (currentTimestamp - lastReadTimestamp) >= debounceTime)
-      {
+      // if ((resultsList.isEmpty() || (currentTimestamp - mostRecentTimestamp >= debounceTime)) &&
+      //     (currentTimestamp - lastReadTimestamp) >= debounceTime)
+      // {
         resultsList = Robot.isReal() ? camera.getAllUnreadResults() : cameraSim.getCamera().getAllUnreadResults();
-        lastReadTimestamp = currentTimestamp;
+        //lastReadTimestamp = currentTimestamp;
         resultsList.sort((PhotonPipelineResult a, PhotonPipelineResult b) -> {
           return a.getTimestampSeconds() >= b.getTimestampSeconds() ? 1 : -1;
         });
@@ -545,7 +550,7 @@ public class Vision
         {
           updateEstimatedGlobalPose();
         }
-      }
+      
     }
 
     /**
@@ -635,6 +640,7 @@ public class Vision
     }
 
 
-  }
+}
+
 
 }

@@ -1,0 +1,50 @@
+{
+  "NetworkTables": {
+    "transitory": {
+      "photonvision": {
+        "cam2": {
+          "open": true
+        },
+        "cam3": {
+          "open": true
+        },
+        "open": true
+      }
+    },
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Alerts": "Alerts",
+      "/SmartDashboard/Auto Chooser": "String Chooser",
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/Mechanisms/Commands/ArmFollowerMotor/Down": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ArmFollowerMotor/Up": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ArmFollowerMotor/ZeroEncoder": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ArmLeaderMotor/Down": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ArmLeaderMotor/Up": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ArmLeaderMotor/ZeroEncoder": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ArmSubsystem/Live Tuning": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ExampleSubsystem/Live Tuning": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ShooterMotor/Down": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ShooterMotor/Up": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ShooterMotor/ZeroEncoder": "Command",
+      "/SmartDashboard/Mechanisms/Commands/ShooterSubsystem/Live Tuning": "Command",
+      "/SmartDashboard/Mechanisms/Commands/TurretMotor/Down": "Command",
+      "/SmartDashboard/Mechanisms/Commands/TurretMotor/Up": "Command",
+      "/SmartDashboard/Mechanisms/Commands/TurretMotor/ZeroEncoder": "Command",
+      "/SmartDashboard/Mechanisms/Commands/TurretSubsystem/Live Tuning": "Command",
+      "/SmartDashboard/Mechanisms/Commands/TurretSubsystemMotor/Down": "Command",
+      "/SmartDashboard/Mechanisms/Commands/TurretSubsystemMotor/Up": "Command",
+      "/SmartDashboard/Mechanisms/Commands/TurretSubsystemMotor/ZeroEncoder": "Command",
+      "/SmartDashboard/PathPlanner": "Alerts",
+      "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/TurretSubsystem": "Alerts"
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "10.45.7.2"
+  }
+}
