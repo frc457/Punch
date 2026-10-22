@@ -296,7 +296,8 @@ public class RobotContainer
     // driverController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
     // driverController.circle().whileTrue(m_CommandTrain.armOscillate());
 
-    driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    // Facing away from your driver station: on red that is 180 degrees on the field, which auto-aim needs to know.
+    driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyroWithAlliance)));
 
     driverController.R3().whileTrue(new AimCommand(drivebase));
     driverController.L3().onTrue(new ToggleAimCommand(drivebase));
