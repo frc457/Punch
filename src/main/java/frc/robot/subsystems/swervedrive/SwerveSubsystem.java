@@ -5,6 +5,7 @@
 package frc.robot.subsystems.swervedrive;
 
 import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Meters;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -28,8 +29,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -79,6 +82,21 @@ public class SwerveSubsystem extends SubsystemBase
    */
   private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
   /**
+   * The middle of the blue hub: tag 26 is on its near face, and the hub is 47 inches wide, centered across the field.
+   */
+  private final Translation2d       blueHub             =
+      new Translation2d(aprilTagFieldLayout.getTagPose(26).orElseThrow().getX() + Units.inchesToMeters(47) / 2,
+                        aprilTagFieldLayout.getFieldWidth() / 2);
+  /** The middle of the red hub, the blue one turned around the middle of the field. */
+  private final Translation2d       redHub              =
+      new Translation2d(aprilTagFieldLayout.getFieldLength() - blueHub.getX(),
+                        aprilTagFieldLayout.getFieldWidth() - blueHub.getY());
+  /**
+   * Which way the shooter faces, from the robot's front: it shoots out of the back. Every auto shoots with the robot
+   * turned 172 to 178 degrees from the hub.
+   */
+  public static final Rotation2d    SHOOTER_DIRECTION   = Rotation2d.k180deg;
+  /**
    * Enable vision odometry updates while driving.
    */
   private final boolean             visionDriveTest     = true;
@@ -93,6 +111,9 @@ public class SwerveSubsystem extends SubsystemBase
 	private NetworkTable networkTable = null;
   private BooleanPublisher alwaysPointAtTargetPublisher = null;
   private BooleanTopic topicAutoTracking = null;
+  /** How far the robot is from its hub, in meters, and how far the shooter is from facing it, in degrees. */
+  private DoublePublisher hubDistancePublisher = null;
+  private DoublePublisher aimErrorPublisher = null;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -135,6 +156,8 @@ public class SwerveSubsystem extends SubsystemBase
     topicAutoTracking = networkTable.getBooleanTopic("autotracking");
     alwaysPointAtTargetPublisher = topicAutoTracking.publish();
     alwaysPointAtTargetPublisher.set(false);
+    hubDistancePublisher = networkTable.getDoubleTopic("hubDistance").publish();
+    aimErrorPublisher = networkTable.getDoubleTopic("aimError").publish();
 
     setupPathPlanner();
   }
@@ -171,6 +194,8 @@ public class SwerveSubsystem extends SubsystemBase
       swerveDrive.updateOdometry();
       vision.updatePoseEstimation(swerveDrive);
     }
+    hubDistancePublisher.set(getDistanceToHub().in(Meters));
+    aimErrorPublisher.set(getShooterAimError().getDegrees());
   }
 
   @Override
@@ -794,25 +819,57 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
-   * The target for the robot's alliance: the blue tower on blue, the red tower otherwise. The pose is always measured
-   * from the blue wall, so it needs no flipping for red.
+   * The middle of the robot's alliance's hub: blue on blue, red otherwise. The pose is always measured from the blue
+   * wall, so it needs no flipping for red.
    *
-   * @return The target's position, as a {@link Pose2d} for {@link SwerveInputStream#aim}.
+   * @return The hub's position on the field.
    */
-  public Pose2d getAimTarget() {
+  public Translation2d getHub() {
     boolean blue = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue;
-    return new Pose2d(blue ? targets[0] : targets[1], Rotation2d.kZero);
+    return blue ? blueHub : redHub;
   }
 
   /**
-   * Aim a drive stream at the alliance's target while {@code aiming} is true. YAGSL's aim mode turns the robot with
-   * the swerve heading controller, the short way round, while the driver keeps control of translation.
+   * The hub, as a {@link Pose2d} for {@link SwerveInputStream#aim}.
+   *
+   * @return The hub's position, facing nowhere in particular.
+   */
+  public Pose2d getAimTarget() {
+    return new Pose2d(getHub(), Rotation2d.kZero);
+  }
+
+  /**
+   * How far the robot is from its hub, which sets how fast to shoot.
+   *
+   * @return The distance from the middle of the robot to the middle of the hub.
+   */
+  public Distance getDistanceToHub() {
+    return Meters.of(getPose().getTranslation().getDistance(getHub()));
+  }
+
+  /**
+   * How far the shooter still has to turn to face the hub, the short way round.
+   *
+   * @return The turn, from -180 to 180 degrees, counterclockwise positive.
+   */
+  public Rotation2d getShooterAimError() {
+    Rotation2d toHub = getHub().minus(getPose().getTranslation()).getAngle();
+    return toHub.plus(SHOOTER_DIRECTION).minus(getHeading());
+  }
+
+  /**
+   * Aim a drive stream's shooter at the alliance's hub while {@code aiming} is true. YAGSL's aim mode turns the robot
+   * with the swerve heading controller, the short way round, while the driver keeps control of translation. The
+   * heading offset turns the back of the robot, where the shooter is, to the hub.
    *
    * @param stream The driver's {@link SwerveInputStream}.
    * @param aiming When to aim.
    * @return The same stream, aiming.
    */
   public SwerveInputStream withHubAim(SwerveInputStream stream, BooleanSupplier aiming) {
-    return stream.aim(this::getAimTarget).aimWhile(aiming);
+    return stream.aim(this::getAimTarget)
+                 .aimHeadingOffset(SHOOTER_DIRECTION)
+                 .aimHeadingOffset(true)
+                 .aimWhile(aiming);
   }
 }

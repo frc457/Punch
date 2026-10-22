@@ -27,7 +27,8 @@ import swervelib.SwerveInputStream;
 /**
  * Drives the simulated swerve drive through a {@link SwerveInputStream} aimed with
  * {@link SwerveSubsystem#withHubAim}, like RobotContainer's, with both auto-aim modes, from several places and headings on each alliance, and
- * checks that the robot ends up pointing at its alliance's hub and turns the short way to get there.
+ * checks that the robot ends up with its shooter, on its back, facing its alliance's hub, turning the short way to get
+ * there.
  */
 class AutoAimSimTest
 {
@@ -69,12 +70,11 @@ class AutoAimSimTest
     DriverStationSim.notifyNewData();
   }
 
-  /** The heading from the robot to the hub its alliance aims at, in degrees. */
-  private static double bearingToHub(boolean red)
+  /** The heading that turns the shooter, on the back of the robot, to the alliance's hub, in degrees. */
+  private static double shootingHeading(Pose2d pose)
   {
-    Translation2d hub = drivebase.targets[red ? 1 : 0];
-    Translation2d toHub = hub.minus(drivebase.getPose().getTranslation());
-    return toHub.getAngle().getDegrees();
+    Translation2d toHub = drivebase.getHub().minus(pose.getTranslation());
+    return toHub.getAngle().plus(SwerveSubsystem.SHOOTER_DIRECTION).getDegrees();
   }
 
   /** Where the simulated robot really is, as opposed to where odometry and vision think it is. */
@@ -83,13 +83,11 @@ class AutoAimSimTest
     return drivebase.getSwerveDrive().getSimulationDriveTrainPose().orElseThrow();
   }
 
-  /** How far the robot really is from facing the hub, in degrees. */
+  /** How far the shooter really is from facing the hub, in degrees. */
   private static double trueHeadingError(boolean red)
   {
-    Translation2d hub = drivebase.targets[red ? 1 : 0];
     Pose2d pose = truePose();
-    return MathUtil.inputModulus(hub.minus(pose.getTranslation()).getAngle().getDegrees()
-                                 - pose.getRotation().getDegrees(), -180, 180);
+    return MathUtil.inputModulus(shootingHeading(pose) - pose.getRotation().getDegrees(), -180, 180);
   }
 
   /** How far the estimated heading is from the true one, in degrees. */
@@ -101,7 +99,7 @@ class AutoAimSimTest
 
   private static double headingError(boolean red)
   {
-    return MathUtil.inputModulus(bearingToHub(red) - drivebase.getHeading().getDegrees(), -180, 180);
+    return MathUtil.inputModulus(shootingHeading(drivebase.getPose()) - drivebase.getHeading().getDegrees(), -180, 180);
   }
 
   private interface Aim
