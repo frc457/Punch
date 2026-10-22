@@ -2,6 +2,9 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RPM;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -42,17 +45,23 @@ public class ShooterSubsystem extends SubsystemBase {
   .withMotorInverted(true)
   .withIdleMode(MotorMode.COAST)
   .withStatorCurrentLimit(Amps.of(40))
+  // A 1 lb, 2 in wheel, for simulation: a solid disc's moment of inertia is half its mass times its radius squared.
+  .withMomentOfInertia(KilogramSquareMeters.of(0.5 * Pounds.of(1).in(Kilograms) * Math.pow(Inches.of(1).in(Meters), 2)))
   .withFollowers(Pair.of(shootertwo, true));
 
   private SmartMotorController sparkSmartMotorController = new SparkWrapper(shooterMotor, DCMotor.getNeoVortex(2), smcConfig);
 
- private final FlyWheelConfig shooterConfig = new FlyWheelConfig(sparkSmartMotorController)
+ private final FlyWheelConfig shooterConfig = new FlyWheelConfig()
   .withDiameter(Inches.of(2))
-  .withMass(Pounds.of(1))
-  .withUpperSoftLimit(SHOOTER_CONSTANTS.UPPER_SOFT_LIMIT)
   .withTelemetry("ShooterMech", TelemetryVerbosity.HIGH);
 
-  private FlyWheel shooter = new FlyWheel(shooterConfig);
+  private FlyWheel shooter = new FlyWheel(shooterConfig, sparkSmartMotorController);
+
+  /** YAMS no longer has a flywheel speed limit, so keep every setpoint under SHOOTER_CONSTANTS.UPPER_SOFT_LIMIT here. */
+  private static AngularVelocity limit(AngularVelocity speed) {
+    double max = SHOOTER_CONSTANTS.UPPER_SOFT_LIMIT.in(RPM);
+    return RPM.of(Math.max(-max, Math.min(max, speed.in(RPM))));
+  }
 
   /**
    * Gets the current velocity of the shooter.
@@ -64,7 +73,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }   
 
     public void setMechanismVelocitySetpoint(AngularVelocity speed){
-      shooter.setMechanismVelocitySetpoint(speed);
+      shooter.setMechanismVelocitySetpoint(limit(speed));
     }
   /**
    * Set the shooter velocity.
@@ -73,7 +82,7 @@ public class ShooterSubsystem extends SubsystemBase {
    * @return {@link edu.wpi.first.wpilibj2.command.RunCommand}
    */
   public Command setVelocity(AngularVelocity speed) {
-    return shooter.setSpeed(speed);
+    return shooter.run(limit(speed));
     }
 
   /**

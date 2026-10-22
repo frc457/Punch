@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS.SHOOTER_SPEED;
-import frc.robot.commands.AimCommand;
 import frc.robot.commands.AutoCommands;
 //import frc.robot.commands.AutoCommands;
 //import frc.robot.commands.AutoIntaking;
@@ -105,13 +104,20 @@ public class RobotContainer
   // /**
   //  * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
   //  */
-  SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
+  /** Hold to aim at the alliance's target. */
+  private final Trigger aimButton = driverController.R3();
+
+  // The driver drives as usual. While R3 is held, or always aim is toggled on with L3, YAGSL turns the robot to face
+  // the alliance's target with the heading controller, and the driver keeps control of translation.
+  SwerveInputStream driveAngularVelocity = drivebase.withHubAim(
+                                               SwerveInputStream.of(drivebase.getSwerveDrive(),
                                                                 () -> -driverController.getLeftY() * 1,
                                                                 () -> -driverController.getLeftX() * 1)
                                                                 .withControllerRotationAxis(()->driverController.getRightX())
                                                                 .deadband(OperatorConstants.DEADBAND)
                                                                 .scaleTranslation(0.8)
-                                                                .allianceRelativeControl(true);
+                                                                .allianceRelativeControl(true),
+                                               () -> aimButton.getAsBoolean() || drivebase.isAlwaysPointingAtTarget());
 
 
   SwerveInputStream driveAngularVelocityKeyboard = SwerveInputStream.of(drivebase.getSwerveDrive(),
@@ -296,9 +302,10 @@ public class RobotContainer
     // driverController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
     // driverController.circle().whileTrue(m_CommandTrain.armOscillate());
 
-    driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    // Facing away from your driver station: on red that is 180 degrees on the field, which auto-aim needs to know.
+    driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyroWithAlliance)));
 
-    driverController.R3().whileTrue(new AimCommand(drivebase));
+    // R3 aims through driveAngularVelocity's aimWhile, above.
     driverController.L3().onTrue(new ToggleAimCommand(drivebase));
 
 
