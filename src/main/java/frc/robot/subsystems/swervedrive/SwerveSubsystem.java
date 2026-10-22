@@ -5,6 +5,7 @@
 package frc.robot.subsystems.swervedrive;
 
 import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Meters;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -28,8 +29,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -49,6 +52,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.json.simple.parser.ParseException;
@@ -58,6 +62,7 @@ import org.w3c.dom.css.CSS2Properties;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
+import swervelib.SwerveInputStream;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
@@ -77,6 +82,21 @@ public class SwerveSubsystem extends SubsystemBase
    */
   private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
   /**
+   * The middle of the blue hub: tag 26 is on its near face, and the hub is 47 inches wide, centered across the field.
+   */
+  private final Translation2d       blueHub             =
+      new Translation2d(aprilTagFieldLayout.getTagPose(26).orElseThrow().getX() + Units.inchesToMeters(47) / 2,
+                        aprilTagFieldLayout.getFieldWidth() / 2);
+  /** The middle of the red hub, the blue one turned around the middle of the field. */
+  private final Translation2d       redHub              =
+      new Translation2d(aprilTagFieldLayout.getFieldLength() - blueHub.getX(),
+                        aprilTagFieldLayout.getFieldWidth() - blueHub.getY());
+  /**
+   * Which way the shooter faces, from the robot's front: it shoots out of the back. Every auto shoots with the robot
+   * turned 172 to 178 degrees from the hub.
+   */
+  public static final Rotation2d    SHOOTER_DIRECTION   = Rotation2d.k180deg;
+  /**
    * Enable vision odometry updates while driving.
    */
   private final boolean             visionDriveTest     = true;
@@ -84,6 +104,8 @@ public class SwerveSubsystem extends SubsystemBase
    * PhotonVision class to keep an accurate odometry.
    */
   private Vision vision;
+  /** Whether vision corrects the pose; see {@link #setVisionUpdates(boolean)}. */
+  private boolean visionUpdates = true;
 
   private boolean alwaysPointAtTarget = false;
 
@@ -91,6 +113,9 @@ public class SwerveSubsystem extends SubsystemBase
 	private NetworkTable networkTable = null;
   private BooleanPublisher alwaysPointAtTargetPublisher = null;
   private BooleanTopic topicAutoTracking = null;
+  /** How far the robot is from its hub, in meters, and how far the shooter is from facing it, in degrees. */
+  private DoublePublisher hubDistancePublisher = null;
+  private DoublePublisher aimErrorPublisher = null;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -133,6 +158,8 @@ public class SwerveSubsystem extends SubsystemBase
     topicAutoTracking = networkTable.getBooleanTopic("autotracking");
     alwaysPointAtTargetPublisher = topicAutoTracking.publish();
     alwaysPointAtTargetPublisher.set(false);
+    hubDistancePublisher = networkTable.getDoubleTopic("hubDistance").publish();
+    aimErrorPublisher = networkTable.getDoubleTopic("aimError").publish();
 
     setupPathPlanner();
   }
@@ -167,8 +194,13 @@ public class SwerveSubsystem extends SubsystemBase
     if (visionDriveTest)
     {
       swerveDrive.updateOdometry();
-      vision.updatePoseEstimation(swerveDrive);
+      if (visionUpdates)
+      {
+        vision.updatePoseEstimation(swerveDrive);
+      }
     }
+    hubDistancePublisher.set(getDistanceToHub().in(Meters));
+    aimErrorPublisher.set(getShooterAimError().getDegrees());
   }
 
   @Override
@@ -524,37 +556,8 @@ public class SwerveSubsystem extends SubsystemBase
       //swerveDrive.driveFieldOriented(velocity.get());
 
 
-      // Do I always point at target?
-      if (alwaysPointAtTarget) {
-
-        // yes, always point at the target
-        double targetAngle = findAngleToTarget();
-        double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
-
-        // Adjust the angle
-        if (currentAngle < 0.0) {
-          currentAngle += 360.0;
-        } else if (currentAngle >= 360.0) {
-          currentAngle -= 360.0;
-        }
-
-        double diff = targetAngle - currentAngle;
-
-        if (Math.abs(diff) > 5.0) {
-
-          ChassisSpeeds cs = velocity.get().plus(new ChassisSpeeds(
-              0.0,
-              0.0,
-              (diff > 0.0) ? 2.0 : -2.0));
-
-          swerveDrive.driveFieldOriented(cs);
-        } else {
-          swerveDrive.driveFieldOriented(velocity.get());
-        }
-      } else {
-        // normal drive
-        swerveDrive.driveFieldOriented(velocity.get());
-      }
+      // Aiming is done by the SwerveInputStream: see withHubAim().
+      swerveDrive.driveFieldOriented(velocity.get());
     });
   }
 
@@ -645,6 +648,16 @@ public class SwerveSubsystem extends SubsystemBase
    * <p>
    * If red alliance rotate the robot 180 after the drviebase zero command
    */
+  /**
+   * Turn vision's pose corrections on or off, leaving odometry from the wheels and gyro. On by default.
+   *
+   * @param enabled true to let vision correct the pose.
+   */
+  public void setVisionUpdates(boolean enabled)
+  {
+    visionUpdates = enabled;
+  }
+
   public void zeroGyroWithAlliance()
   {
     if (isRedAlliance())
@@ -811,77 +824,67 @@ public class SwerveSubsystem extends SubsystemBase
     alwaysPointAtTargetPublisher.set(alwaysPointAtTarget);
   }
 
-  public boolean pointAtTarget() {
-
-    double targetAngle = findAngleToTarget();
-    double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
-
-    // Adjust the angle
-    if(currentAngle < 0.0) {
-      currentAngle += 360.0;
-    } else if(currentAngle >= 360.0) {
-      currentAngle -= 360.0;
-    }
-
-    // Point the robot at the target
-    drive(
-      getTargetSpeeds(
-        0.0,
-        0.0,
-        Rotation2d.fromDegrees(targetAngle)
-      )
-    );
-
-    // Get the difference of angle to see if we are at the intended target                            
-    //double diff = Math.abs(Math.abs(targetAngle) - Math.abs(currentAngle));
-    double diff = targetAngle - currentAngle;
-
-    System.out.println("targetAngle: " + targetAngle + ", currentAngle: " + currentAngle + ", diff: " + Math.abs(diff));
-
-    // Is the difference low enough to be considered good?
-    if(Math.abs(diff) < 5.0) {
-      // we are within the tolerance so return true
-      return true;
-    }
-
-    // we are not within the tolerance so return false
-    return false;
+  /**
+   * Whether the robot always aims at the target, toggled with {@link #toggleAlwaysPointAtTarget()}.
+   *
+   * @return true while always aiming.
+   */
+  public boolean isAlwaysPointingAtTarget() {
+    return alwaysPointAtTarget;
   }
 
-  //public double findAngleToTarget(Translation2d target, Pose2d currentPose) {
-  public double findAngleToTarget() {
-    
-    Translation2d target = targets[0];
-    Pose2d currentPose = swerveDrive.getPose();
+  /**
+   * The middle of the robot's alliance's hub: blue on blue, red otherwise. The pose is always measured from the blue
+   * wall, so it needs no flipping for red.
+   *
+   * @return The hub's position on the field.
+   */
+  public Translation2d getHub() {
+    boolean blue = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue;
+    return blue ? blueHub : redHub;
+  }
 
-    double targetAngle = 0.0;
+  /**
+   * The hub, as a {@link Pose2d} for {@link SwerveInputStream#aim}.
+   *
+   * @return The hub's position, facing nowhere in particular.
+   */
+  public Pose2d getAimTarget() {
+    return new Pose2d(getHub(), Rotation2d.kZero);
+  }
 
-    if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Blue) {
+  /**
+   * How far the robot is from its hub, which sets how fast to shoot.
+   *
+   * @return The distance from the middle of the robot to the middle of the hub.
+   */
+  public Distance getDistanceToHub() {
+    return Meters.of(getPose().getTranslation().getDistance(getHub()));
+  }
 
-      // We are on the blue alliance so point at the blue target
-      target = targets[0];
+  /**
+   * How far the shooter still has to turn to face the hub, the short way round.
+   *
+   * @return The turn, from -180 to 180 degrees, counterclockwise positive.
+   */
+  public Rotation2d getShooterAimError() {
+    Rotation2d toHub = getHub().minus(getPose().getTranslation()).getAngle();
+    return toHub.plus(SHOOTER_DIRECTION).minus(getHeading());
+  }
 
-      // Calculate the angle
-      targetAngle = Math.atan2(
-        target.getY() - currentPose.getY(),
-        target.getX() - currentPose.getX()
-      );
-
-      targetAngle = Math.toDegrees(targetAngle);
-    } else {
-      // We are on the red alliance so point at the red target
-      target = targets[1];
-
-      // Calculate the angle
-      targetAngle = Math.atan2(
-        -target.getY() - (-currentPose.getY()),
-        -target.getX() - (-currentPose.getX())
-      );
-
-      targetAngle = Math.toDegrees(targetAngle);
-      targetAngle = (targetAngle + 180.0) % 360.0;
-    }
-
-    return targetAngle;
+  /**
+   * Aim a drive stream's shooter at the alliance's hub while {@code aiming} is true. YAGSL's aim mode turns the robot
+   * with the swerve heading controller, the short way round, while the driver keeps control of translation. The
+   * heading offset turns the back of the robot, where the shooter is, to the hub.
+   *
+   * @param stream The driver's {@link SwerveInputStream}.
+   * @param aiming When to aim.
+   * @return The same stream, aiming.
+   */
+  public SwerveInputStream withHubAim(SwerveInputStream stream, BooleanSupplier aiming) {
+    return stream.aim(this::getAimTarget)
+                 .aimHeadingOffset(SHOOTER_DIRECTION)
+                 .aimHeadingOffset(true)
+                 .aimWhile(aiming);
   }
 }

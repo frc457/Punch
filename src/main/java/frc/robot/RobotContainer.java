@@ -27,12 +27,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS.SHOOTER_SPEED;
-import frc.robot.commands.AimCommand;
 import frc.robot.commands.AutoCommands;
 //import frc.robot.commands.AutoCommands;
 //import frc.robot.commands.AutoIntaking;
 import frc.robot.commands.AutoShoot;
 import frc.robot.commands.CommandTrain;
+import frc.robot.commands.HubShootCommand;
 import frc.robot.commands.FairyCommand;
 //import frc.robot.commands.PulseCommand;
 import frc.robot.commands.ShootCommand;
@@ -105,13 +105,24 @@ public class RobotContainer
   // /**
   //  * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
   //  */
-  SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
+  /** Hold to aim at the alliance's hub. */
+  private final Trigger aimButton = driverController.R3();
+  /** Hold to aim at the hub and shoot, at a speed for the distance, once aimed and up to speed. */
+  private final Trigger shootButton = driverController.R2();
+
+  // The driver drives as usual. While R3 or R2 is held, or always aim is toggled on with L3, YAGSL turns the shooter,
+  // on the back of the robot, to face the alliance's hub with the heading controller, and the driver keeps control
+  // of translation.
+  SwerveInputStream driveAngularVelocity = drivebase.withHubAim(
+                                               SwerveInputStream.of(drivebase.getSwerveDrive(),
                                                                 () -> -driverController.getLeftY() * 1,
                                                                 () -> -driverController.getLeftX() * 1)
                                                                 .withControllerRotationAxis(()->driverController.getRightX())
                                                                 .deadband(OperatorConstants.DEADBAND)
                                                                 .scaleTranslation(0.8)
-                                                                .allianceRelativeControl(true);
+                                                                .allianceRelativeControl(true),
+                                               () -> aimButton.getAsBoolean() || shootButton.getAsBoolean()
+                                                     || drivebase.isAlwaysPointingAtTarget());
 
 
   SwerveInputStream driveAngularVelocityKeyboard = SwerveInputStream.of(drivebase.getSwerveDrive(),
@@ -296,9 +307,11 @@ public class RobotContainer
     // driverController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
     // driverController.circle().whileTrue(m_CommandTrain.armOscillate());
 
-    driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    // Facing away from your driver station: on red that is 180 degrees on the field, which auto-aim needs to know.
+    driverController.cross().onTrue((Commands.runOnce(drivebase::zeroGyroWithAlliance)));
 
-    driverController.R3().whileTrue(new AimCommand(drivebase));
+    // R3 aims through driveAngularVelocity's aimWhile, above. R2 aims the same way, and shoots.
+    shootButton.whileTrue(new HubShootCommand(m_shooter, m_indexer, m_Hopper, m_intake, drivebase, armOscillateCommand));
     driverController.L3().onTrue(new ToggleAimCommand(drivebase));
 
 
