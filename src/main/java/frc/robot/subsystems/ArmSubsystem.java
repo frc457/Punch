@@ -120,7 +120,7 @@ public class ArmSubsystem extends SubsystemBase
 
   private ArmConfig m_config = new ArmConfig()
       .withLength(length)
-      .withHardLimits(Rotations.of(-12), Rotations.of(140))
+      .withHardLimits(Degrees.of(-12), Degrees.of(140))
       .withTelemetry("ArmSubsystem", TelemetryVerbosity.HIGH);
       //.withStartingPosition(Degrees.of(0));
 
