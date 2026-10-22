@@ -79,6 +79,11 @@ public class SwerveSubsystem extends SubsystemBase
    */
   private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
   /**
+   * Which way the shooter faces, from the robot's front: it shoots out of the back. Every auto shoots with the robot
+   * turned 172 to 178 degrees from the hub.
+   */
+  public static final Rotation2d    SHOOTER_DIRECTION   = Rotation2d.k180deg;
+  /**
    * Enable vision odometry updates while driving.
    */
   private final boolean             visionDriveTest     = true;
@@ -86,6 +91,8 @@ public class SwerveSubsystem extends SubsystemBase
    * PhotonVision class to keep an accurate odometry.
    */
   private Vision vision;
+  /** Whether vision corrects the pose; see {@link #setVisionUpdates(boolean)}. */
+  private boolean visionUpdates = true;
 
   private boolean alwaysPointAtTarget = false;
 
@@ -169,7 +176,10 @@ public class SwerveSubsystem extends SubsystemBase
     if (visionDriveTest)
     {
       swerveDrive.updateOdometry();
-      vision.updatePoseEstimation(swerveDrive);
+      if (visionUpdates)
+      {
+        vision.updatePoseEstimation(swerveDrive);
+      }
     }
   }
 
@@ -618,6 +628,16 @@ public class SwerveSubsystem extends SubsystemBase
    * <p>
    * If red alliance rotate the robot 180 after the drviebase zero command
    */
+  /**
+   * Turn vision's pose corrections on or off, leaving odometry from the wheels and gyro. On by default.
+   *
+   * @param enabled true to let vision correct the pose.
+   */
+  public void setVisionUpdates(boolean enabled)
+  {
+    visionUpdates = enabled;
+  }
+
   public void zeroGyroWithAlliance()
   {
     if (isRedAlliance())
@@ -805,14 +825,18 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
-   * Aim a drive stream at the alliance's target while {@code aiming} is true. YAGSL's aim mode turns the robot with
-   * the swerve heading controller, the short way round, while the driver keeps control of translation.
+   * Aim a drive stream's shooter at the alliance's target while {@code aiming} is true. YAGSL's aim mode turns the
+   * robot with the swerve heading controller, the short way round, while the driver keeps control of translation. The
+   * heading offset turns the back of the robot, where the shooter is, to the target.
    *
    * @param stream The driver's {@link SwerveInputStream}.
    * @param aiming When to aim.
    * @return The same stream, aiming.
    */
   public SwerveInputStream withHubAim(SwerveInputStream stream, BooleanSupplier aiming) {
-    return stream.aim(this::getAimTarget).aimWhile(aiming);
+    return stream.aim(this::getAimTarget)
+                 .aimHeadingOffset(SHOOTER_DIRECTION)
+                 .aimHeadingOffset(true)
+                 .aimWhile(aiming);
   }
 }
