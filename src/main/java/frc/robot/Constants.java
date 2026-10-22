@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
@@ -24,6 +26,12 @@ import swervelib.math.Matter;
  */
 public final class Constants
 {
+
+  /**
+   * Which way the shooter faces, from the robot's front: it shoots out of the back. Every auto shoots with the robot
+   * turned 172 to 178 degrees from the hub. Auto-aim turns this side of the robot to the target.
+   */
+  public static final Rotation2d SHOOTER_DIRECTION = Rotation2d.k180deg;
 
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);

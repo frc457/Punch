@@ -85,6 +85,8 @@ public class SwerveSubsystem extends SubsystemBase
    * PhotonVision class to keep an accurate odometry.
    */
   private Vision vision;
+  /** Whether vision corrects the pose; see {@link #setVisionUpdates(boolean)}. */
+  private boolean visionUpdates = true;
 
   private boolean alwaysPointAtTarget = false;
 
@@ -173,7 +175,10 @@ public class SwerveSubsystem extends SubsystemBase
     if (visionDriveTest)
     {
       swerveDrive.updateOdometry();
-      vision.updatePoseEstimation(swerveDrive);
+      if (visionUpdates)
+      {
+        vision.updatePoseEstimation(swerveDrive);
+      }
     }
   }
 
@@ -632,6 +637,16 @@ public class SwerveSubsystem extends SubsystemBase
    * <p>
    * If red alliance rotate the robot 180 after the drviebase zero command
    */
+  /**
+   * Turn vision's pose corrections on or off, leaving odometry from the wheels and gyro. On by default.
+   *
+   * @param enabled true to let vision correct the pose.
+   */
+  public void setVisionUpdates(boolean enabled)
+  {
+    visionUpdates = enabled;
+  }
+
   public void zeroGyroWithAlliance()
   {
     if (isRedAlliance())
@@ -799,9 +814,9 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
-   * Turn the robot to face the target, with the heading controller.
+   * Turn the shooter, on the back of the robot, to face the target, with the heading controller.
    *
-   * @return true once the robot faces the target, within 5 degrees.
+   * @return true once the shooter faces the target, within 5 degrees.
    */
   public boolean pointAtTarget() {
     drive(getTargetSpeeds(0.0, 0.0, findAngleToTarget()));
@@ -809,21 +824,22 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
-   * The field heading from the robot to its alliance's target. The pose is always measured from the blue alliance
+   * The field heading that turns the shooter, on the back of the robot, to its alliance's target: the heading from the
+   * robot to the target, turned by {@link Constants#SHOOTER_DIRECTION}. The pose is always measured from the blue alliance
    * wall, so this needs no flipping for red.
    *
-   * @return The heading the robot needs to face the target.
+   * @return The heading the robot needs for the shooter to face the target.
    */
   public Rotation2d findAngleToTarget() {
     boolean blue = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue;
     Translation2d target = blue ? targets[0] : targets[1];
-    Rotation2d angle = target.minus(swerveDrive.getPose().getTranslation()).getAngle();
+    Rotation2d angle = target.minus(swerveDrive.getPose().getTranslation()).getAngle().plus(Constants.SHOOTER_DIRECTION);
     targetAnglePublisher.set(angle.getDegrees());
     return angle;
   }
 
   /**
-   * How far the robot still has to turn to face the target, the short way round.
+   * How far the robot still has to turn for the shooter to face the target, the short way round.
    *
    * @return The turn, from -180 to 180 degrees, counterclockwise positive.
    */
@@ -836,7 +852,7 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
-   * The angular velocity that turns the robot toward the target, from the same heading controller as
+   * The angular velocity that turns the shooter toward the target, from the same heading controller as
    * {@link #pointAtTarget()}.
    *
    * @return Radians per second, counterclockwise positive.
