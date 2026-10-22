@@ -104,6 +104,8 @@ public class SwerveSubsystem extends SubsystemBase
    * PhotonVision class to keep an accurate odometry.
    */
   private Vision vision;
+  /** Whether vision corrects the pose; see {@link #setVisionUpdates(boolean)}. */
+  private boolean visionUpdates = true;
 
   private boolean alwaysPointAtTarget = false;
 
@@ -192,7 +194,10 @@ public class SwerveSubsystem extends SubsystemBase
     if (visionDriveTest)
     {
       swerveDrive.updateOdometry();
-      vision.updatePoseEstimation(swerveDrive);
+      if (visionUpdates)
+      {
+        vision.updatePoseEstimation(swerveDrive);
+      }
     }
     hubDistancePublisher.set(getDistanceToHub().in(Meters));
     aimErrorPublisher.set(getShooterAimError().getDegrees());
@@ -643,6 +648,16 @@ public class SwerveSubsystem extends SubsystemBase
    * <p>
    * If red alliance rotate the robot 180 after the drviebase zero command
    */
+  /**
+   * Turn vision's pose corrections on or off, leaving odometry from the wheels and gyro. On by default.
+   *
+   * @param enabled true to let vision correct the pose.
+   */
+  public void setVisionUpdates(boolean enabled)
+  {
+    visionUpdates = enabled;
+  }
+
   public void zeroGyroWithAlliance()
   {
     if (isRedAlliance())
