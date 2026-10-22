@@ -55,7 +55,7 @@ public class ArmSubsystem extends SubsystemBase
 
   private final SmartMotorControllerConfig followerMotorConfig = new SmartMotorControllerConfig(this)
        .withClosedLoopController(ARM_FOLLOWER_CONSTANTS.kP, ARM_FOLLOWER_CONSTANTS.kI, ARM_FOLLOWER_CONSTANTS.kD)
-      .withSoftLimit(Degrees.of(0), Degrees.of(130.0))
+      .withSoftLimits(Degrees.of(0), Degrees.of(130.0))
 
       // .withClosedLoopController(new ExponentialProfilePIDController(ARM_FOLLOWER_CONSTANTS.kP, ARM_FOLLOWER_CONSTANTS.kI, ARM_FOLLOWER_CONSTANTS.kD, ExponentialProfilePIDController
       // .createArmConstraints(Volts.of(10), motors, weight, length, gearing)))
@@ -92,8 +92,11 @@ public class ArmSubsystem extends SubsystemBase
 
       // .withClosedLoopController(new ExponentialProfilePIDController(ARM_CONSTANTS.kP, ARM_CONSTANTS.kI, ARM_CONSTANTS.kD, ExponentialProfilePIDController
       // .createArmConstraints(Volts.of(10), motors, weight, length, gearing)))
-      .withSoftLimit(Degrees.of(0), Degrees.of(130.0))
+      .withSoftLimits(Degrees.of(0), Degrees.of(130.0))
       .withGearing(gearing)
+      // The arm's length and mass, for simulation: these used to be on the ArmConfig.
+      .withMomentOfInertia(length, weight)
+      .withSimStartingPosition(Rotations.of(0))
       .withIdleMode(MotorMode.COAST)
       .withTelemetry("ArmLeaderMotor", TelemetryVerbosity.HIGH)
       .withStatorCurrentLimit(Amps.of(20))
@@ -115,18 +118,16 @@ public class ArmSubsystem extends SubsystemBase
                                                                                leaderMotorConfig);
 
 
-  private ArmConfig m_config = new ArmConfig(leaderMotorController)
+  private ArmConfig m_config = new ArmConfig()
       .withLength(length)
-      .withHardLimit(Rotations.of(-12), Rotations.of(140))
-      .withTelemetry("ArmSubsystem", TelemetryVerbosity.HIGH)
-      .withMass(Pounds.of(7))
-      .withSimStartingPosition(Rotations.of(0));
+      .withHardLimits(Rotations.of(-12), Rotations.of(140))
+      .withTelemetry("ArmSubsystem", TelemetryVerbosity.HIGH);
       //.withStartingPosition(Degrees.of(0));
 
 
 
 
-  private final Arm  arm  = new Arm(m_config);
+  private final Arm  arm  = new Arm(m_config, leaderMotorController);
 
   public ArmSubsystem()
   {
@@ -158,11 +159,6 @@ public class ArmSubsystem extends SubsystemBase
     return arm.set(dutycycle);
   }
 
-  public Command sysId()
-  {
-    return arm.sysId(Volts.of(1), Volts.of(1).per(Second), Second.of(30));
-  }
-
   
   public Angle getAngle() {
     return arm.getAngle();
@@ -180,7 +176,8 @@ public class ArmSubsystem extends SubsystemBase
   
   public void setArmAngle(Angle angle)
   {
-    arm.setAngle(angle);
+    // arm.setAngle(angle) only makes a command, which did nothing unless scheduled; this sets the setpoint now.
+    arm.setMechanismPositionSetpoint(angle);
   }
 
 
