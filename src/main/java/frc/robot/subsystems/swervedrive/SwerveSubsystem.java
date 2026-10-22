@@ -30,6 +30,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -84,6 +85,8 @@ public class SwerveSubsystem extends SubsystemBase
    * PhotonVision class to keep an accurate odometry.
    */
   private Vision vision;
+  /** Whether vision corrects the pose; see {@link #setVisionUpdates(boolean)}. */
+  private boolean visionUpdates = true;
 
   private boolean alwaysPointAtTarget = false;
 
@@ -91,6 +94,9 @@ public class SwerveSubsystem extends SubsystemBase
 	private NetworkTable networkTable = null;
   private BooleanPublisher alwaysPointAtTargetPublisher = null;
   private BooleanTopic topicAutoTracking = null;
+  /** The heading to the target and how far the robot still has to turn to face it, in degrees. */
+  private DoublePublisher targetAnglePublisher = null;
+  private DoublePublisher targetErrorPublisher = null;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -133,6 +139,8 @@ public class SwerveSubsystem extends SubsystemBase
     topicAutoTracking = networkTable.getBooleanTopic("autotracking");
     alwaysPointAtTargetPublisher = topicAutoTracking.publish();
     alwaysPointAtTargetPublisher.set(false);
+    targetAnglePublisher = networkTable.getDoubleTopic("targetAngle").publish();
+    targetErrorPublisher = networkTable.getDoubleTopic("targetError").publish();
 
     setupPathPlanner();
   }
@@ -167,7 +175,10 @@ public class SwerveSubsystem extends SubsystemBase
     if (visionDriveTest)
     {
       swerveDrive.updateOdometry();
-      vision.updatePoseEstimation(swerveDrive);
+      if (visionUpdates)
+      {
+        vision.updatePoseEstimation(swerveDrive);
+      }
     }
   }
 
@@ -526,31 +537,12 @@ public class SwerveSubsystem extends SubsystemBase
 
       // Do I always point at target?
       if (alwaysPointAtTarget) {
-
-        // yes, always point at the target
-        double targetAngle = findAngleToTarget();
-        double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
-
-        // Adjust the angle
-        if (currentAngle < 0.0) {
-          currentAngle += 360.0;
-        } else if (currentAngle >= 360.0) {
-          currentAngle -= 360.0;
-        }
-
-        double diff = targetAngle - currentAngle;
-
-        if (Math.abs(diff) > 5.0) {
-
-          ChassisSpeeds cs = velocity.get().plus(new ChassisSpeeds(
-              0.0,
-              0.0,
-              (diff > 0.0) ? 2.0 : -2.0));
-
-          swerveDrive.driveFieldOriented(cs);
-        } else {
-          swerveDrive.driveFieldOriented(velocity.get());
-        }
+        // Yes: drive where the driver says, but turn with the heading controller to face the target. It turns the
+        // short way and slows down as it gets there, so it settles instead of spinning past.
+        ChassisSpeeds driver = velocity.get();
+        swerveDrive.driveFieldOriented(new ChassisSpeeds(driver.vxMetersPerSecond,
+                                                         driver.vyMetersPerSecond,
+                                                         aimRotationSpeed()));
       } else {
         // normal drive
         swerveDrive.driveFieldOriented(velocity.get());
@@ -645,6 +637,16 @@ public class SwerveSubsystem extends SubsystemBase
    * <p>
    * If red alliance rotate the robot 180 after the drviebase zero command
    */
+  /**
+   * Turn vision's pose corrections on or off, leaving odometry from the wheels and gyro. On by default.
+   *
+   * @param enabled true to let vision correct the pose.
+   */
+  public void setVisionUpdates(boolean enabled)
+  {
+    visionUpdates = enabled;
+  }
+
   public void zeroGyroWithAlliance()
   {
     if (isRedAlliance())
@@ -811,77 +813,53 @@ public class SwerveSubsystem extends SubsystemBase
     alwaysPointAtTargetPublisher.set(alwaysPointAtTarget);
   }
 
+  /**
+   * Turn the shooter, on the back of the robot, to face the target, with the heading controller.
+   *
+   * @return true once the shooter faces the target, within 5 degrees.
+   */
   public boolean pointAtTarget() {
-
-    double targetAngle = findAngleToTarget();
-    double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
-
-    // Adjust the angle
-    if(currentAngle < 0.0) {
-      currentAngle += 360.0;
-    } else if(currentAngle >= 360.0) {
-      currentAngle -= 360.0;
-    }
-
-    // Point the robot at the target
-    drive(
-      getTargetSpeeds(
-        0.0,
-        0.0,
-        Rotation2d.fromDegrees(targetAngle)
-      )
-    );
-
-    // Get the difference of angle to see if we are at the intended target                            
-    //double diff = Math.abs(Math.abs(targetAngle) - Math.abs(currentAngle));
-    double diff = targetAngle - currentAngle;
-
-    System.out.println("targetAngle: " + targetAngle + ", currentAngle: " + currentAngle + ", diff: " + Math.abs(diff));
-
-    // Is the difference low enough to be considered good?
-    if(Math.abs(diff) < 5.0) {
-      // we are within the tolerance so return true
-      return true;
-    }
-
-    // we are not within the tolerance so return false
-    return false;
+    drive(getTargetSpeeds(0.0, 0.0, findAngleToTarget()));
+    return Math.abs(getAngleErrorToTarget().getDegrees()) < 5.0;
   }
 
-  //public double findAngleToTarget(Translation2d target, Pose2d currentPose) {
-  public double findAngleToTarget() {
-    
-    Translation2d target = targets[0];
-    Pose2d currentPose = swerveDrive.getPose();
+  /**
+   * The field heading that turns the shooter, on the back of the robot, to its alliance's target: the heading from the
+   * robot to the target, turned by {@link Constants#SHOOTER_DIRECTION}. The pose is always measured from the blue alliance
+   * wall, so this needs no flipping for red.
+   *
+   * @return The heading the robot needs for the shooter to face the target.
+   */
+  public Rotation2d findAngleToTarget() {
+    boolean blue = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue;
+    Translation2d target = blue ? targets[0] : targets[1];
+    Rotation2d angle = target.minus(swerveDrive.getPose().getTranslation()).getAngle().plus(Constants.SHOOTER_DIRECTION);
+    targetAnglePublisher.set(angle.getDegrees());
+    return angle;
+  }
 
-    double targetAngle = 0.0;
+  /**
+   * How far the robot still has to turn for the shooter to face the target, the short way round.
+   *
+   * @return The turn, from -180 to 180 degrees, counterclockwise positive.
+   */
+  public Rotation2d getAngleErrorToTarget() {
+    // Rotation2d.minus wraps to -180..180, so a target at -170 degrees seen from a heading of 170 degrees is a
+    // 20 degree turn counterclockwise, not 340 degrees clockwise.
+    Rotation2d error = findAngleToTarget().minus(getHeading());
+    targetErrorPublisher.set(error.getDegrees());
+    return error;
+  }
 
-    if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Blue) {
-
-      // We are on the blue alliance so point at the blue target
-      target = targets[0];
-
-      // Calculate the angle
-      targetAngle = Math.atan2(
-        target.getY() - currentPose.getY(),
-        target.getX() - currentPose.getX()
-      );
-
-      targetAngle = Math.toDegrees(targetAngle);
-    } else {
-      // We are on the red alliance so point at the red target
-      target = targets[1];
-
-      // Calculate the angle
-      targetAngle = Math.atan2(
-        -target.getY() - (-currentPose.getY()),
-        -target.getX() - (-currentPose.getX())
-      );
-
-      targetAngle = Math.toDegrees(targetAngle);
-      targetAngle = (targetAngle + 180.0) % 360.0;
-    }
-
-    return targetAngle;
+  /**
+   * The angular velocity that turns the shooter toward the target, from the same heading controller as
+   * {@link #pointAtTarget()}.
+   *
+   * @return Radians per second, counterclockwise positive.
+   */
+  private double aimRotationSpeed() {
+    getAngleErrorToTarget();
+    return swerveDrive.swerveController.headingCalculate(getHeading().getRadians(),
+                                                        findAngleToTarget().getRadians());
   }
 }

@@ -634,6 +634,10 @@ public class Vision
           {
             estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
           }
+          // Vision corrects where the robot is, but not which way it faces: the gyro knows that far better. Averaged
+          // tag estimates were tens of degrees off in simulation, enough to drag the heading around and make
+          // auto-aim miss or turn the wrong way. Zero the gyro with the alliance (cross) to line it up with the field.
+          estStdDevs = VecBuilder.fill(estStdDevs.get(0, 0), estStdDevs.get(1, 0), Double.MAX_VALUE);
           curStdDevs = estStdDevs;
         }
       }
