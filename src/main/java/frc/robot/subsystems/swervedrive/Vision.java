@@ -79,6 +79,9 @@ public class Vision
    */
   private             Field2d             field2d;
 
+  private boolean enableCam1 = true;
+  private boolean enableCam2 = true;
+  private boolean enableCam3 = true;
 
   /**
    * Constructor for the Vision class.
@@ -146,17 +149,28 @@ public class Vision
     }
     for (Cameras camera : Cameras.values())
     {
-      Optional<EstimatedRobotPose> poseEst = getEstimatedGlobalPose(camera);
-      if (poseEst.isPresent())
-      {
-        System.out.println("poseEst is present");
-        var pose = poseEst.get();
-        swerveDrive.addVisionMeasurement(pose.estimatedPose.toPose2d(),
+      if(camera == Cameras.cam1 && !enableCam1) {
+        return;
+      }
+
+      if(camera == Cameras.cam2 && !enableCam2) {
+        return;
+      }
+
+      if(camera == Cameras.cam3 && !enableCam3) {
+        return;
+      }
+      
+        Optional<EstimatedRobotPose> poseEst = getEstimatedGlobalPose(camera);
+        if (poseEst.isPresent())
+        {
+          //System.out.println("poseEst is present");
+          var pose = poseEst.get();
+          swerveDrive.addVisionMeasurement(pose.estimatedPose.toPose2d(),
                                          pose.timestampSeconds,
                                          camera.curStdDevs);
-       }//else {
-      //   System.out.println("poseEst is not present");
-      // }
+        }
+      
     }
 
   }
@@ -438,9 +452,12 @@ public class Vision
       robotToCamTransform = new Transform3d(robotToCamTranslation, robotToCamRotation);
 
       poseEstimator = new PhotonPoseEstimator(Vision.fieldLayout,
-                                              PoseStrategy.AVERAGE_BEST_TARGETS,
+                                              //PoseStrategy.AVERAGE_BEST_TARGETS,
+                                              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                                               robotToCamTransform);
-      poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
+      //poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+      poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
       this.singleTagStdDevs = singleTagStdDevs;
       this.multiTagStdDevs = multiTagStdDevsMatrix;
@@ -553,6 +570,8 @@ public class Vision
       
     }
 
+    
+
     /**
      * The latest estimated robot pose on the field from vision data. This may be empty. This should only be called once
      * per loop.
@@ -568,7 +587,15 @@ public class Vision
       Optional<EstimatedRobotPose> visionEst = Optional.empty();
       for (var change : resultsList)
       {
-        visionEst = poseEstimator.update(change);
+        // Try to do a multi tag estimate
+        visionEst = poseEstimator.estimateCoprocMultiTagPose(change);
+
+        // Is it available?  
+        if (!visionEst.isPresent()) {
+          // It is not, so we do not see multiple tags, use lowest ambiguity instead
+          visionEst = poseEstimator.estimateLowestAmbiguityPose(change);
+        } 
+
         updateEstimationStdDevs(visionEst, change.getTargets());
       }
       estimatedRobotPose = visionEst;
