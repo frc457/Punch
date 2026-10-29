@@ -79,9 +79,9 @@ public class Vision
    */
   private             Field2d             field2d;
 
-  private boolean enableCam1 = true;
+  private boolean enableCam1 = false;
   private boolean enableCam2 = true;
-  private boolean enableCam3 = true;
+  private boolean enableCam3 = false;
 
   /**
    * Constructor for the Vision class.
@@ -164,7 +164,7 @@ public class Vision
         Optional<EstimatedRobotPose> poseEst = getEstimatedGlobalPose(camera);
         if (poseEst.isPresent())
         {
-          //System.out.println("poseEst is present");
+          System.out.println("poseEst is present");
           var pose = poseEst.get();
           swerveDrive.addVisionMeasurement(pose.estimatedPose.toPose2d(),
                                          pose.timestampSeconds,
@@ -369,7 +369,7 @@ public class Vision
      * Right Camera
      */
     cam1("cam1",
-              new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(-90)),
+              new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(180)),
               new Translation3d(Units.inchesToMeters(13),
                                 Units.inchesToMeters(-5.5),
                                 Units.inchesToMeters(18.5)),
@@ -379,7 +379,7 @@ public class Vision
      * Center Camera
      */
     cam3("cam3",
-               new Rotation3d(0, Math.toRadians(0), Math.toRadians(270)),
+               new Rotation3d(0, Math.toRadians(0), Math.toRadians(245)),
                new Translation3d(Units.inchesToMeters(-13),
                                  Units.inchesToMeters(-5.5),
                                  Units.inchesToMeters(18.5)),

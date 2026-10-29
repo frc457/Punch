@@ -300,6 +300,14 @@ public class RobotContainer
 
     driverController.R3().whileTrue(new AimCommand(drivebase));
     driverController.L3().onTrue(new ToggleAimCommand(drivebase));
+    driverController.povUp().onTrue(
+    Commands.runOnce(() -> drivebase.setVisionUpdates(false))
+);
+
+// Release left bumper to re-enable vision pose updates
+driverController.povUp().onFalse(
+    Commands.runOnce(() -> drivebase.setVisionUpdates(true))
+);
 
 
     // m_operatorController.button(1).onTrue( new AutoShoot(() -> SHOOTER_SPEED.CORRNER_VELOCITY,  

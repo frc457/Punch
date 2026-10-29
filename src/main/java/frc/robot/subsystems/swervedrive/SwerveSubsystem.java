@@ -35,6 +35,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -163,12 +164,39 @@ public class SwerveSubsystem extends SubsystemBase
   @Override
   public void periodic()
   {
+    double targetAngle = findAngleToTarget();
+    double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
+    double diff = targetAngle - currentAngle;
+
+    System.out.println("targetAngle: " + targetAngle + ", currentAngle: " + currentAngle + ", diff: " + Math.abs(diff));
+
     // When vision is enabled we must manually update odometry in SwerveDrive
     if (visionDriveTest)
     {
       swerveDrive.updateOdometry();
       vision.updatePoseEstimation(swerveDrive);
     }
+    SmartDashboard.putNumber(
+    "Debug/Robot Heading",
+    getHeading().getDegrees()
+);
+
+
+
+SmartDashboard.putNumber(
+    "Debug/Robot Heading",
+    getHeading().getDegrees()
+);
+
+SmartDashboard.putNumber(
+    "Debug/Raw Gyro Heading",
+    Math.toDegrees(swerveDrive.getGyro().getRawRotation3d().getZ())
+);
+
+SmartDashboard.putNumber(
+    "Debug/Odometry Heading",
+    swerveDrive.getOdometryHeading().getDegrees()
+);
   }
 
   @Override
@@ -730,7 +758,12 @@ public class SwerveSubsystem extends SubsystemBase
   {
     return swerveDrive.getFieldVelocity();
   }
-
+   /** Whether vision corrects the pose; see {@link #setVisionUpdates(boolean)}. */
+   private boolean visionUpdates = true;
+  public void setVisionUpdates(boolean enabled)
+  {
+    visionUpdates = enabled;
+  }
   /**
    * Gets the current velocity (x, y and omega) of the robot
    *
@@ -839,7 +872,7 @@ public class SwerveSubsystem extends SubsystemBase
     System.out.println("targetAngle: " + targetAngle + ", currentAngle: " + currentAngle + ", diff: " + Math.abs(diff));
 
     // Is the difference low enough to be considered good?
-    if(Math.abs(diff) < 5.0) {
+    if(Math.abs(diff) < 10.0) {
       // we are within the tolerance so return true
       return true;
     }
