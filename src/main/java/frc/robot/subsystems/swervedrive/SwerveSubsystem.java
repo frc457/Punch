@@ -168,7 +168,7 @@ public class SwerveSubsystem extends SubsystemBase
     double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
     double diff = targetAngle - currentAngle;
 
-    System.out.println("targetAngle: " + targetAngle + ", currentAngle: " + currentAngle + ", diff: " + Math.abs(diff));
+    //System.out.println("targetAngle: " + targetAngle + ", currentAngle: " + currentAngle + ", diff: " + Math.abs(diff));
 
     // When vision is enabled we must manually update odometry in SwerveDrive
     if (visionDriveTest)
@@ -559,12 +559,16 @@ SmartDashboard.putNumber(
         double targetAngle = findAngleToTarget();
         double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
 
-        // Adjust the angle
-        if (currentAngle < 0.0) {
-          currentAngle += 360.0;
-        } else if (currentAngle >= 360.0) {
-          currentAngle -= 360.0;
+        if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Red) {
+          currentAngle = swerveDrive.getPose().rotateBy(Rotation2d.fromDegrees(180.0)).getRotation().getDegrees();
         }
+
+        // Adjust the angle
+        // if (currentAngle < 0.0) {
+        //   currentAngle += 360.0;
+        // } else if (currentAngle >= 360.0) {
+        //   currentAngle -= 360.0;
+        // }
 
         double diff = targetAngle - currentAngle;
 
@@ -849,12 +853,16 @@ SmartDashboard.putNumber(
     double targetAngle = findAngleToTarget();
     double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
 
-    // Adjust the angle
-    if(currentAngle < 0.0) {
-      currentAngle += 360.0;
-    } else if(currentAngle >= 360.0) {
-      currentAngle -= 360.0;
+    if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Red) {
+      currentAngle = swerveDrive.getPose().rotateBy(Rotation2d.fromDegrees(180.0)).getRotation().getDegrees();
     }
+
+    // Adjust the angle
+    // if(currentAngle < 0.0) {
+    //   currentAngle += 360.0;
+    // } else if(currentAngle >= 360.0) {
+    //   currentAngle -= 360.0;
+    // }
 
     // Point the robot at the target
     drive(
@@ -869,16 +877,31 @@ SmartDashboard.putNumber(
     //double diff = Math.abs(Math.abs(targetAngle) - Math.abs(currentAngle));
     double diff = targetAngle - currentAngle;
 
-    System.out.println("targetAngle: " + targetAngle + ", currentAngle: " + currentAngle + ", diff: " + Math.abs(diff));
+    //System.out.println("targetAngle: " + targetAngle + ", currentAngle: " + currentAngle + ", diff: " + Math.abs(diff));
 
-    // Is the difference low enough to be considered good?
-    if(Math.abs(diff) < 10.0) {
-      // we are within the tolerance so return true
-      return true;
+    if (Math.abs(diff) > 5.0) {
+
+        System.out.println("diff: " + diff);
+
+        ChassisSpeeds cs = new ChassisSpeeds(
+            0.0,
+            0.0,
+            (diff > 0.0) ? 2.0 : -2.0);
+
+        swerveDrive.driveFieldOriented(cs);
+
+        //return true;
+        return false;
     }
 
+    // Is the difference low enough to be considered good?
+    // if(Math.abs(diff) < 10.0) {
+    //   // we are within the tolerance so return true
+    //   return true;
+    // }
+
     // we are not within the tolerance so return false
-    return false;
+    return true;
   }
 
   //public double findAngleToTarget(Translation2d target, Pose2d currentPose) {
@@ -895,12 +918,20 @@ SmartDashboard.putNumber(
       target = targets[0];
 
       // Calculate the angle
+      // targetAngle = Math.atan2(
+      //   target.getY() - currentPose.getY(),
+      //   target.getX() - currentPose.getX()
+      // );
+
+      // targetAngle = Math.toDegrees(targetAngle);
+
       targetAngle = Math.atan2(
         target.getY() - currentPose.getY(),
         target.getX() - currentPose.getX()
       );
 
       targetAngle = Math.toDegrees(targetAngle);
+      targetAngle = targetAngle % 360.0;
     } else {
       // We are on the red alliance so point at the red target
       target = targets[1];
@@ -912,7 +943,9 @@ SmartDashboard.putNumber(
       );
 
       targetAngle = Math.toDegrees(targetAngle);
-      targetAngle = (targetAngle + 180.0) % 360.0;
+      targetAngle = targetAngle % 360.0;
+      //targetAngle = (targetAngle + 180.0) % 360.0;
+      //targetAngle = (targetAngle + 180.0) % 360.0;
     }
 
     return targetAngle;
