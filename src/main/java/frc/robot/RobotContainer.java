@@ -289,7 +289,7 @@ public class RobotContainer
     // // driverController.R1().onFalse(m_CommandTrain.mixer());
     // driverController.R2().onFalse(m_CommandTrain.mixer());
 
-    // driverController.L1().whileTrue(m_CommandTrain.Intaking());
+     driverController.L1().whileTrue(m_CommandTrain.Intaking());
     // driverController.R1().whileTrue(m_CommandTrain.throwup());
 
     // driverController.povUp().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));

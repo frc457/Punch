@@ -360,7 +360,7 @@ public class Vision
      * Left Camera
      */
     cam2("cam2",
-             new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(0)),
+             new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(180)),
              new Translation3d(Units.inchesToMeters(10.0),
                                Units.inchesToMeters(-3),
                                Units.inchesToMeters(18.5)),

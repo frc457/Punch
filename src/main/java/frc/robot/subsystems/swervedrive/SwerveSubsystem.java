@@ -19,6 +19,7 @@ import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -559,9 +560,9 @@ SmartDashboard.putNumber(
         double targetAngle = findAngleToTarget();
         double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
 
-        if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Red) {
-          currentAngle = swerveDrive.getPose().rotateBy(Rotation2d.fromDegrees(180.0)).getRotation().getDegrees();
-        }
+        // if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Red) {
+        //   currentAngle = swerveDrive.getPose().rotateBy(Rotation2d.fromDegrees(180.0)).getRotation().getDegrees();
+        // }
 
         // Adjust the angle
         // if (currentAngle < 0.0) {
@@ -570,9 +571,13 @@ SmartDashboard.putNumber(
         //   currentAngle -= 360.0;
         // }
 
-        double diff = targetAngle - currentAngle;
+        //double diff = targetAngle - currentAngle;
 
-        if (Math.abs(diff) > 5.0) {
+        //System.out.println("diff: " + diff);
+
+        double diff = MathUtil.inputModulus(targetAngle - currentAngle, -180, 180);
+
+        if (Math.abs(diff) > 10.0) {
 
           ChassisSpeeds cs = velocity.get().plus(new ChassisSpeeds(
               0.0,
@@ -853,9 +858,9 @@ SmartDashboard.putNumber(
     double targetAngle = findAngleToTarget();
     double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
 
-    if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Red) {
-      currentAngle = swerveDrive.getPose().rotateBy(Rotation2d.fromDegrees(180.0)).getRotation().getDegrees();
-    }
+    // if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Red) {
+    //   currentAngle = swerveDrive.getPose().rotateBy(Rotation2d.fromDegrees(180.0)).getRotation().getDegrees();
+    // }
 
     // Adjust the angle
     // if(currentAngle < 0.0) {
@@ -879,7 +884,7 @@ SmartDashboard.putNumber(
 
     //System.out.println("targetAngle: " + targetAngle + ", currentAngle: " + currentAngle + ", diff: " + Math.abs(diff));
 
-    if (Math.abs(diff) > 5.0) {
+    if (Math.abs(diff) > 25.0) {
 
         System.out.println("diff: " + diff);
 
@@ -911,12 +916,15 @@ SmartDashboard.putNumber(
     Pose2d currentPose = swerveDrive.getPose();
 
     double targetAngle = 0.0;
-
+    //double currentAngle2 = swerveDrive.getPose().getRotation().getDegrees();
+    // double currentAngle2 = swerveDrive.getPose().getRotation().getDegrees();
+    // if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Blue) {
+    //   currentAngle2 = swerveDrive.getPose().rotateBy(Rotation2d.fromDegrees(180.0)).getRotation().getDegrees();}
     if (DriverStation.getAlliance().isPresent() &&  DriverStation.getAlliance().get() == Alliance.Blue) {
 
       // We are on the blue alliance so point at the blue target
       target = targets[0];
-
+      //double targetAngle = targetAngle - currentAngle2;
       // Calculate the angle
       // targetAngle = Math.atan2(
       //   target.getY() - currentPose.getY(),
@@ -926,12 +934,17 @@ SmartDashboard.putNumber(
       // targetAngle = Math.toDegrees(targetAngle);
 
       targetAngle = Math.atan2(
-        target.getY() - currentPose.getY(),
-        target.getX() - currentPose.getX()
+        -target.getY() - (-currentPose.getY()),
+        -target.getX() - (-currentPose.getX())
       );
 
+      // targetAngle = Math.atan2(
+      //   target.getY() - currentPose.getY(),
+      //   target.getX() - currentPose.getX()
+      // );
+
       targetAngle = Math.toDegrees(targetAngle);
-      targetAngle = targetAngle % 360.0;
+      //targetAngle = targetAngle % 360.0;
     } else {
       // We are on the red alliance so point at the red target
       target = targets[1];
