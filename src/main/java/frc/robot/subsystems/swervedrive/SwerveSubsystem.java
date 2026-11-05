@@ -94,6 +94,8 @@ public class SwerveSubsystem extends SubsystemBase
   private BooleanPublisher alwaysPointAtTargetPublisher = null;
   private BooleanTopic topicAutoTracking = null;
 
+  private double previous_vyMetersPerSecond = 0.0;
+
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
    *
@@ -554,21 +556,44 @@ SmartDashboard.putNumber(
       // Do I always point at target?
       if (alwaysPointAtTarget) {
 
+        double angleMovementAugmentation = 0.0;
+
+        // Are we moving in the y direction (this is side to side)?
+        if(Math.abs(previous_vyMetersPerSecond - velocity.get().vyMetersPerSecond) > 0.5) {
+          System.out.println("we are moving in the y direction");
+
+          if(previous_vyMetersPerSecond - velocity.get().vyMetersPerSecond > 0) {
+            angleMovementAugmentation = 5.0;
+          } else {
+            angleMovementAugmentation = -5.0;
+          }
+        } 
+
         // yes, always point at the target
         double targetAngle = findAngleToTarget();
+        // This is the angle that the robot is currently facing
         double currentAngle = swerveDrive.getPose().getRotation().getDegrees();
 
-        double diff = MathUtil.inputModulus(targetAngle - currentAngle, -180, 180);
+        // Calculate the optimal angle
+        double diff = MathUtil.inputModulus(targetAngle - currentAngle, -180.0, 180.0) + angleMovementAugmentation;
 
+        // Record this for the next iteration
+        previous_vyMetersPerSecond = velocity.get().vyMetersPerSecond;
+
+        // Is the robot not pointing at the target within the preferred window?
         if (Math.abs(diff) > 10.0) {
+          // It is not so point at the target
 
-          ChassisSpeeds cs = velocity.get().plus(new ChassisSpeeds(
-              //0.0,
+          // Move the robot in the requested way from the driver but rotate/point
+          // the robot at the target
+          ChassisSpeeds cs = velocity.get().plus(
+            new ChassisSpeeds(
               velocity.get().vxMetersPerSecond,
-              //0.0,
               velocity.get().vyMetersPerSecond,
-              (diff > 0.0) ? 2.0 : -2.0));
+              (diff > 0.0) ? 2.0 : -2.0)
+          );
 
+          // Drive the robot with the new values
           swerveDrive.driveFieldOriented(cs);
         } else {
           swerveDrive.driveFieldOriented(velocity.get());
