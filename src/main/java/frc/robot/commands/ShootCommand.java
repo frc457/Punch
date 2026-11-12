@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LEDS;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.HopperSubsytem;
 
@@ -22,6 +23,7 @@ public class ShootCommand extends Command
     private HopperSubsytem Hopper;
     private Supplier<AngularVelocity> setpoint;
     private IntakeSubsystem Intake;
+    private LEDS leds;
     double speed = -1.0;
     boolean goingUp = true;
     
@@ -31,7 +33,8 @@ public class ShootCommand extends Command
                         IndexerSubsystem indexer, 
                         HopperSubsytem Hopper, 
                         IntakeSubsystem Intake, 
-                        Command armOscillate
+                        Command armOscillate,
+                        LEDS leds
     )
     {
         this.shooter = shooter;
@@ -40,6 +43,7 @@ public class ShootCommand extends Command
         this.Intake = Intake;
         setpoint = shootSpeed;
         this.armOscillateCommand = armOscillate;
+        this.leds = leds;
 
         addRequirements(shooter, 
         indexer, 
@@ -69,6 +73,7 @@ public class ShootCommand extends Command
     shooter.setMechanismVelocitySetpoint(setpoint.get());
     if (shooter.getVelocity().in(RPM) >= setpoint.get().in(RPM) * 0.90)
     {
+      leds.setPattern(LEDS.Pattern.SOLID_GREEN);
       
       indexer.setduty(-1);
       Intake.setduty(-0.8);
@@ -94,6 +99,8 @@ public class ShootCommand extends Command
       // SmartDashboard.putNumber("Pulse Speed", speed);
         
     }else{
+        // Shooter is spinning up
+        leds.setPattern(LEDS.Pattern.SHOT_BLUE);
         indexer.setduty(0);
         Hopper.setduty(0);
         Intake.setduty(0);
@@ -135,6 +142,7 @@ public class ShootCommand extends Command
     indexer.setduty(0);
     Intake.setduty(0);
     Hopper.setduty(0);
+    leds.setPattern(LEDS.Pattern.SHOT_BLUE);
 
     
   }

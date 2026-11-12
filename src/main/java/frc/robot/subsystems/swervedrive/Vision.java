@@ -79,9 +79,9 @@ public class Vision
    */
   private             Field2d             field2d;
 
-  private boolean enableCam1 = false;
+  private boolean enableCam1 = true;
   private boolean enableCam2 = true;
-  private boolean enableCam3 = false;
+  private boolean enableCam3 = true;
 
   /**
    * Constructor for the Vision class.
@@ -128,6 +128,7 @@ public class Vision
     }
 
   }
+  
 
   /**
    * Update the pose estimation inside of {@link SwerveDrive} with all of the given poses.
@@ -363,26 +364,26 @@ public class Vision
              new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(180)),
              new Translation3d(Units.inchesToMeters(10.0),
                                Units.inchesToMeters(-3),
-                               Units.inchesToMeters(18.5)),
+                               Units.inchesToMeters(20)),
              VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
     /**
      * Right Camera
      */
     cam1("cam1",
-              new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(180)),
-              new Translation3d(Units.inchesToMeters(13),
+              new Rotation3d(0, Math.toRadians(0.0), Math.toRadians(-60)),
+              new Translation3d(Units.inchesToMeters(12),
                                 Units.inchesToMeters(-5.5),
-                                Units.inchesToMeters(18.5)),
+                                Units.inchesToMeters(20)),
               VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
 
     /**
      * Center Camera
      */
     cam3("cam3",
-               new Rotation3d(0, Math.toRadians(0), Math.toRadians(245)),
-               new Translation3d(Units.inchesToMeters(-13),
+               new Rotation3d(0, Math.toRadians(0), Math.toRadians(60)),
+               new Translation3d(Units.inchesToMeters(-12),
                                  Units.inchesToMeters(-5.5),
-                                 Units.inchesToMeters(18.5)),
+                                 Units.inchesToMeters(20)),
                VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1));
 
     /**

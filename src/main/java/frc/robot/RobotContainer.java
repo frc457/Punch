@@ -9,9 +9,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -19,10 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.COMMAND_TRAIN_CONSTANTS;
 import frc.robot.Constants.OperatorConstants;
@@ -40,17 +34,14 @@ import frc.robot.commands.ToggleAimCommand;
 //import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LEDS;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.LEDS.Pattern;
 import frc.robot.subsystems.ArmSubsystem;
 //import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.HopperSubsytem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
-import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Degrees;
 import java.io.File;
-
-import org.dyn4j.dynamics.joint.WheelJoint;
 
 import swervelib.SwerveInputStream;
 
@@ -72,6 +63,7 @@ public class RobotContainer
    private final IntakeSubsystem m_intake = new IntakeSubsystem();
   private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   private final HopperSubsytem m_Hopper = new HopperSubsytem();
+  private final LEDS leds = new LEDS();
 
   private final Command armOscillateCommand;
   private final Command PULSE;
@@ -108,7 +100,7 @@ public class RobotContainer
   SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
                                                                 () -> -driverController.getLeftY() * 1,
                                                                 () -> -driverController.getLeftX() * 1)
-                                                                .withControllerRotationAxis(()->driverController.getRightX())
+                                                                .withControllerRotationAxis(()->-driverController.getRightX())
                                                                 .deadband(OperatorConstants.DEADBAND)
                                                                 .scaleTranslation(0.8)
                                                                 .allianceRelativeControl(true);
@@ -195,13 +187,15 @@ public class RobotContainer
 
   private void configureBindings()
   {
-//Two controller config
+    //////////////////////////////////////////////////////////////////////////////////
+    //OPERATOR config
   m_operatorController.R2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SIDE_TRENCH_VELOCITY,  
                                                               m_shooter, 
                                                               m_indexer, 
                                                               m_Hopper,
                                                               m_intake, 
-                                                              armOscillateCommand
+                                                              armOscillateCommand,
+                                                              leds
                                                               ));
 
     m_operatorController.L2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.CORRNER_VELOCITY,  
@@ -209,7 +203,8 @@ public class RobotContainer
                                                               m_indexer, 
                                                               m_Hopper,
                                                               m_intake, 
-                                                              armOscillateCommand
+                                                              armOscillateCommand,
+                                                              leds
                                                               ));
 
     m_operatorController.R1().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SHORTER_VELOCITY,  
@@ -217,7 +212,8 @@ public class RobotContainer
                                                               m_indexer, 
                                                               m_Hopper,
                                                               m_intake, 
-                                                              armOscillateCommand
+                                                              armOscillateCommand,
+                                                              leds
                                                               ));
                                                             
     m_operatorController.L1().whileTrue(new FairyCommand(() -> SHOOTER_SPEED.FAR_VELOCITY,  
@@ -234,12 +230,13 @@ public class RobotContainer
                                                               m_indexer, 
                                                               m_Hopper,
                                                               m_intake, 
-                                                              armOscillateCommand
+                                                              armOscillateCommand,
+                                                              leds
                                                               ));
 
     //Two CONTROLLER CONFIG
     m_operatorController.L1().onFalse(m_CommandTrain.mixer());
-    m_operatorController.L1().onFalse(m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
+    //m_operatorController.L1().onFalse(m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
     m_operatorController.L1().onTrue(m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
     m_operatorController.L2().onFalse(m_CommandTrain.mixer());
     m_operatorController.R1().onFalse(m_CommandTrain.mixer());
@@ -252,12 +249,17 @@ public class RobotContainer
     m_operatorController.povDown().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
 
     m_operatorController.R3().whileTrue(m_CommandTrain.armOscillate());
+
+    ///////////////////////////////////////////////////////////////////////////////
+    
+    //DRIVER CONFIG
     driverController.R2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SHORTER_VELOCITY,  
                                                               m_shooter, 
                                                               m_indexer, 
                                                               m_Hopper,
                                                               m_intake, 
-                                                              armOscillateCommand
+                                                              armOscillateCommand,
+                                                              leds
                                                               ));
 
     driverController.L2().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.CORRNER_VELOCITY,  
@@ -265,9 +267,20 @@ public class RobotContainer
                                                               m_indexer, 
                                                               m_Hopper,
                                                               m_intake, 
-                                                              armOscillateCommand
+                                                              armOscillateCommand,
+                                                              leds
                                                               ));
-
+    driverController.L1().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.FAR_VELOCITY,  
+                                                              m_shooter, 
+                                                              m_indexer, 
+                                                              m_Hopper,
+                                                              m_intake, 
+                                                              armOscillateCommand,
+                                                              leds
+                                                              ));
+    driverController.L1().onFalse(m_CommandTrain.mixer());
+    //m_operatorController.L1().onFalse(m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
+    driverController.L1().onTrue(m_arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE));
     // driverController.R1().whileTrue(new ShootCommand(() -> SHOOTER_SPEED.SHORTER_VELOCITY,  
     //                                                           m_shooter, 
     //                                                           m_indexer, 
@@ -289,7 +302,7 @@ public class RobotContainer
     // // driverController.R1().onFalse(m_CommandTrain.mixer());
     // driverController.R2().onFalse(m_CommandTrain.mixer());
 
-     driverController.L1().whileTrue(m_CommandTrain.Intaking());
+    driverController.R1().whileTrue(m_CommandTrain.Intaking());
     // driverController.R1().whileTrue(m_CommandTrain.throwup());
 
     // driverController.povUp().whileTrue(m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SAFE_ANGLE));
@@ -300,14 +313,17 @@ public class RobotContainer
 
     driverController.R3().whileTrue(new AimCommand(drivebase));
     driverController.L3().onTrue(new ToggleAimCommand(drivebase));
-    driverController.povUp().onTrue(
-    Commands.runOnce(() -> drivebase.setVisionUpdates(false))
-);
+    //driverController.circle().onTrue(leds.setPatternCommand(Pattern.FIRE_LARGE));
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Release left bumper to re-enable vision pose updates
-driverController.povUp().onFalse(
-    Commands.runOnce(() -> drivebase.setVisionUpdates(true))
-);
+//     driverController.povUp().onTrue(
+//     Commands.runOnce(() -> drivebase.setVisionUpdates(false))
+// );
+
+// // Release left bumper to re-enable vision pose updates
+// driverController.povUp().onFalse(
+//     Commands.runOnce(() -> drivebase.setVisionUpdates(true))
+// );
 
 
     // m_operatorController.button(1).onTrue( new AutoShoot(() -> SHOOTER_SPEED.CORRNER_VELOCITY,  
@@ -316,16 +332,6 @@ driverController.povUp().onFalse(
 
 
     // m_operatorController.povLeft().whileTrue( m_CommandTrain.PULSE());
-    // new Trigger(() -> 
-    //     m_operatorController.L1().getAsBoolean() || 
-    //     m_operatorController.L2().getAsBoolean() ||
-    //     m_operatorController.R1().getAsBoolean() ||
-    //     m_operatorController.R2().getAsBoolean() 
-    // ).whileTrue(
-    //     m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.SHOOT_ANGLE)
-    // ).onFalse(
-    //     m_arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE)
-    // );
 
     
     // m_operatorController.R2().whileTrue(new ShootCommand(() -> RPM.of(2600),  

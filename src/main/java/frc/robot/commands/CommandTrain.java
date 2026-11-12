@@ -57,9 +57,18 @@ public class CommandTrain {
     // }
 
 
-    public Command Intaking(){
+    // public Command Intaking(){
 
-        return Arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE)
+    //     return Arm.setAngleAndStop(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE)
+    //    .andThen(
+    //         Intake.set(INTAKING_COMMAND_CONSTANTS.INTAKE_INTAKE_SPEED)
+    //     .alongWith(Hopper.set(INTAKING_COMMAND_CONSTANTS.HOPPER_INTAKE_SPEED)))
+    //     .beforeStarting(() -> SmartDashboard.putBoolean("Intaking", true))
+    //     .finallyDo(interrupted -> SmartDashboard.putBoolean("Intaking", false));
+    // }
+        public Command Intaking(){
+
+        return Arm.setAngle(COMMAND_TRAIN_CONSTANTS.DOWN_ANGLE).withTimeout(1.5)
        .andThen(
             Intake.set(INTAKING_COMMAND_CONSTANTS.INTAKE_INTAKE_SPEED)
         .alongWith(Hopper.set(INTAKING_COMMAND_CONSTANTS.HOPPER_INTAKE_SPEED)))
